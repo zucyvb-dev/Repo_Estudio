@@ -5,6 +5,16 @@ class Contacto {
         this.email = email;
         this.telefono = telefono;
     }
+
+    //Actualizar Email
+    actualizarEmail(nuevoEmail) {
+        this.email = nuevoEmail;
+    }
+
+    //Actualizar Telefono
+    actualizarTelefono(nuevoTelefono) {
+        this.telefono = nuevoTelefono;
+    }
 }
 
 module.exports = Contacto;

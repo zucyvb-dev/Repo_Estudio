@@ -29,32 +29,13 @@ class HistorialRepositorio {
         return historial.rentas;
     }
 
-    //Buscar si un cliente tiene una venta especifica
-    buscarHVentasCliente(historial,ventasId) {
-        return historial.ventas.include(ventasId);
-    }
-
-    //Buscar si un cliente tiene una renta especifica
-    buscarHRentasCliente(historial,rentaId) {
-        return historial.rentas.include(rentaId);
-    }
-
-    //Buscar historial por Cliente
-    buscarPorCliente(clienteId) {
-        const historiaCliente = this.historial.find(h => h.clienteId === clienteId);        
-        return historiaCliente ? historiaCliente.historial : null;
-    }
-
-    //Guardar el historial de un Cliente
-    guardarHistorialCliente(historial,clienteId) {
-        const idx = this.historial.find(h => h.clienteId === clienteId);
-        
-        if (idx >= 0) {
-            this.historial[idx].historial = historial;
+    //Insertar un historial completo
+    insertarHistorial(historial) {
+        if (!(Historial instanceof Historial)) {
+            throw new Error("Objeto no válido, debe ser un historial");            
         } else {
-            this.historial.push({ clienteId, historial})
+            this.historial.push(historial);
         }
-        return "Se ha insertado el historial del cliente "+ clienteId;
     }
 }
 

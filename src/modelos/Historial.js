@@ -27,6 +27,30 @@ class Historial {
     cantidadRentas() {
         return this.rentas.length;
     }
+    
+    //Total de las Ventas
+    totalVentas() {
+        return this.ventas.reduce((suma, v) => suma + (v.total || 0), 0);
+    }
+    
+    //Total de las Rentas
+    totalRentas() {
+        return this.rentas.reduce((suma, r) => suma + (r.costo || 0), 0);
+    }
+
+    //Total de operaciones
+    operaciones() {
+        return this.cantidadVentas() + this.cantidadRentas();
+    }
+
+    //Devolver todos los IDs de los productos utilizados por los clientes de las rentas y las ventas
+    idsOperaciones() {
+        return [
+            ...this.ventas.map(v => v.productoId),
+            ...this.rentas.map(r => r.productoId)
+        ];
+    }
+
 }
 
 module.exports = Historial;

@@ -18,6 +18,16 @@ class Cliente {
             ? historial
             :new Historial(historial.ventas || [],historial.rentas || []);        
     }
+    
+    //Registrar las ventas del Cliente
+    registrarVenta(venta) {
+        this.historial.insertarVentas(venta);
+    }
+
+    //Registrar las rentas del Cliente
+    registrarRenta(renta) {
+        this.historial.insertarRenta(renta);
+    }
 }
 
 module.exports = Cliente;
