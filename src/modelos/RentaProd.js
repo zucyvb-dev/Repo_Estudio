@@ -6,6 +6,12 @@ class RentaProd {
         this.precioDia = precioDia;
         this.precioLineal = precioLineal;
     }
+
+    //Actualizar los precios
+    actualizarPrecios(precioDia,precioLineal) {
+        this.precioDia = precioDia;
+        this.precioLineal = precioLineal;
+    }
 }
 
 module.exports = RentaProd;

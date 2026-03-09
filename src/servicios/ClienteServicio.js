@@ -79,7 +79,7 @@ class ClienteServicio {
     }
     
     //Verificar si un cliente tiene una renta
-    tieneClienteVenta(clienteId,rentaId) {
+    tieneClienteRenta(clienteId,rentaId) {
         const cliente = this.clienteRepo.buscarClientePorId(clienteId);
         
         if (!Validador.validarClienteActivo(cliente)) throw new Error ('Cliente inválido o inactivo');

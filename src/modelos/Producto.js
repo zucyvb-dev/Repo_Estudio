@@ -14,14 +14,24 @@ class Producto {
         //Es de uso exclusivo de Producto
         this.rentaProd = rentaProd instanceof RentaProd
             ? rentaProd
-            : new RentaProd(rentaProd.modelo,rentaProd.precioDia,rentaProd.precioLineal);
+            : rentaProd
+                ? new RentaProd(rentaProd.modelo,rentaProd.precioDia,rentaProd.precioLineal)
+                : null;
 
         this.stock = stock;
 
         //Uso exclusivo de Producto
         this.estado = estado instanceof Estado  
             ? estado
-            : new Estado(estado.rentado,estado.clienteId);
+            : new Estado(estado.rentado || false ,estado.clienteId || null);
+    }
+
+    actualizarProducto({nombre, categoria,precioVenta,rentable,stock}) {
+        if (nombre) this.nombre = nombre;
+        if (categoria) this.categoria = categoria;
+        if (precioVenta) this.precioVenta = precioVenta;
+        if (rentable !== undefined) this.rentable = rentable;
+        if (stock !== undefined) this.stock = stock;
     }
 }
 

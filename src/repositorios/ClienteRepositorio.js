@@ -3,9 +3,7 @@
 const Cliente = require('../modelos/Cliente');
 
 class ClienteRepositorio {
-    constructor(contactoRepo,historialRepo,clienteInicial =  []) {
-        this.contactoRepo = contactoRepo;
-        this.historialRepo = historialRepo;
+    constructor(clienteInicial =  [], contactoRepo, historialRepo) {
         this.cliente = clienteInicial.map(c => new Cliente(
             c.id,
             c.nombre,
@@ -13,6 +11,8 @@ class ClienteRepositorio {
             c.contacto,
             c.historial
         ));
+        this.contactoRepo = contactoRepo;
+        this.historialRepo = historialRepo;        
     }
 
     //Mostrar todos los clientes

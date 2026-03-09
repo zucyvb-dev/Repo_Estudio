@@ -31,6 +31,32 @@ class Validador {
     static validarRenta(renta) {
         return renta && renta.id && renta.productoId && renta.costo >= 0;
     }
+
+    /**Validaciones de Producto y de los elementos que componen sus clases hijas estado e rentaProd */
+    //Validar los datos básicos un producto
+    static validarProducto(datosProducto) {
+        return datosProducto.id && datosProducto.nombre && this.validarPrecioVentaProducto(datosProducto) && this.validarStock(datosProducto,0);
+    }
+
+    //Validar si el producto es rentable
+    static validarProductoRentable(producto) {
+        return producto.rentable === true;
+    }
+
+    //Validar el estado de un producto está disponible (no rentado)
+    static validarEstadoProducto(producto) {
+        return producto.estado && producto.rentable === false;
+    }
+
+    //Validar si tiene stock suficiente
+    static validarStock(producto, cantidad) {
+        return producto.stock >= cantidad;
+    }
+
+    //Validar el precio de venta positivos del producto
+    static validarPrecioVentaProducto(producto) {
+        return producto.precioVenta > 0;
+    }
 }
 
 module.exports = Validador;
