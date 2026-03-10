@@ -6,6 +6,10 @@ class Item {
         this.cantidad = cantidad;
         this.precioUnitario = precioUnitario;
     }
+
+    calcularSubTotal(){
+        return this.cantidad * this.precioUnitario;
+    }
 }
 
 module.exports = Item;

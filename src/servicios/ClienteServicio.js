@@ -3,19 +3,20 @@ const Cliente = require('../modelos/Cliente');
 const Validador = require('../utiles/Validador');
 
 class ClienteServicio {
-    constructor(clienteRepositorio) {
+    constructor(clienteRepositorio,ventaServicio) {
         this.clienteRepo = clienteRepositorio;
-    }
-
-    //Mostrar todos los clientes activos
-    listarClientesActivos() {
-        return this.clienteRepo.mostrarTodo().filter(c => Validador.validarClienteActivo(c));
+        this.ventaServ = ventaServicio;
     }
 
     //Registrar un nuevo cliente
     insertarNuevoCliente(clientedatos) {
-        if (!Validador.validarClienteActivo(clientedatos.activo)) throw new Error ('Cliente inválido o inactivo');
+        //Validaciones de los datos
+        if (!Validador.validarClienteActivo(clientedatos)) throw new Error ('Cliente inválido o inactivo');
+        Validador.validarTextoNoVacio(clientedatos.id,"id");
+        Validador.validarTextoNoVacio(clientedatos.nombre,"nombre");
+        Validador.validarTextoNoVacio(clientedatos.email,"email");
         if (!Validador.validarEmail(clientedatos.contacto.email)) throw new Error ('Email inválido');
+        Validador.validarTextoNoVacio(clientedatos.telefono,"telefono");
         if (!Validador.validarTelefono(clientedatos.contacto.telefono)) throw new Error ('Teléfono inválido');
 
         //Crear la instancia Cliente
@@ -30,12 +31,15 @@ class ClienteServicio {
     }
 
     //Registrar una venta en el Historial de un Cliente
-    insertarVentaPorCliente(clienteId,venta) {
+    insertarVentaPorCliente(clienteId,items) {
         const cliente = this.clienteRepo.buscarClientePorId(clienteId);
         if (!Validador.validarClienteActivo(cliente)) throw new Error ('Cliente inválido o inactivo');
         if (!Validador.validarVenta(venta)) throw new Error ('Venta inválida');
     
-        cliente.registrarVenta(venta);
+        //Insertamos la venta correspondiente
+        this.ventaServ.registrarVenta(clienteId,items);
+
+        //Agregamos el historial de la venta del cliente
         this.clienteRepo.guardarHistorialCliente(clienteId,"venta",venta);
         return `Se insertó satisfactoriamente la venta del cliente: ${cliente.nombre}`;
     }

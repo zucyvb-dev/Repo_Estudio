@@ -2,7 +2,7 @@
 
 class Config {
     constructor(tax,moneda) {
-        this.tax = tax;
+        this.TAX = tax;
         this.moneda = moneda;
     }
 }

@@ -10,6 +10,8 @@ class ProductoServicio {
     //Insertar un Producto
     insertarProducto(datosProducto) {
         if (!Validador.validarProducto(datosProducto)) throw new Error("Producto inválido");
+        Validador.validarTextoNoVacio(datosProducto.id,"id");
+        Validador.validarTextoNoVacio(datosProducto.nombre,"nombre");
         const producto = new Producto(
             datosProducto.id,
             datosProducto.nombre,
@@ -55,7 +57,7 @@ class ProductoServicio {
         if (!producto) throw new Error ('Producto no encontrado');
 
         if (!Validador.validarProductoRentable(producto)) throw new Error ('Producto no rentable');
-        if (producto.estado && !Validador.validarEstadoProducto(producto)) throw new Error ('Producto ya está rentado');
+        if (!Validador.validarEstadoProducto(producto)) throw new Error ('Producto ya está rentado');
         
         //Inicializar rentaProd si estaba null
         if (!producto.rentaProd) {

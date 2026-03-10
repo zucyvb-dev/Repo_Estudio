@@ -4,58 +4,99 @@ class Validador {
     
     /**Validaciones de Cliente y de los elementos que componen sus clases hijas contacto e historial */
     //Verificar si el cliente está activo
-    static validarClienteActivo(activo) {
-        if (typeof activo !== "boolean") {
-            throw new Error("El estado del cliente debe ser booleano");            
+    static validarClienteActivo(cliente) {
+        if (!cliente || cliente.activo !== true) {
+            throw new Error("El estado del cliente no está activo o no existe. ");            
         }
-        return activo === true;
+        return true;
     }
 
     //Verificar si el formato del email es válido
     static validarEmail(email) {
         const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!regex.test(email)) {
+            throw new Error("El email no tiene el formato adecuado. ");
+            
+        }
         return regex.test(email);
     }
 
     //Verificar si el formato del teléfono es válido
     static validarTelefono(telefono) {
-        return typeof telefono === 'string' && telefono.replace(/\D/g, '').length >= 7;
+        if (typeof telefono === 'string' && telefono.replace(/\D/g, '').length >= 7) {
+            throw new Error("El teléfono debe tener al menos 7 dígitos. ");            
+        }
+        return true;
     }
 
     //Verificar si la venta es válida
     static validarVenta(venta) {
-        return venta && venta.id && venta.productoId && venta.total >= 0;
+        if (!venta && !venta.id && !venta.clienteId && !venta.items && venta.total < 0) {
+            throw new Error("La venta no es válida. ");            
+        }
+        return true;
     }
     
     //Verificar si la renta es válida
     static validarRenta(renta) {
-        return renta && renta.id && renta.productoId && renta.costo >= 0;
+        if (!renta && !renta.id && !renta.productoId && !renta.costo < 0) {
+            throw new Error("La renta no es válida. ");            
+        }
+        return true;
     }
 
     /**Validaciones de Producto y de los elementos que componen sus clases hijas estado e rentaProd */
     //Validar los datos básicos un producto
     static validarProducto(datosProducto) {
-        return datosProducto.id && datosProducto.nombre && this.validarPrecioVentaProducto(datosProducto) && this.validarStock(datosProducto,0);
+        if (!datosProducto.id && !datosProducto.nombre && !this.validarPrecioVentaProducto(datosProducto) && !this.validarStock(datosProducto,0)) {
+            throw new Error("El producto no es válido. ");            
+        }
+        return true;
     }
 
     //Validar si el producto es rentable
     static validarProductoRentable(producto) {
-        return producto.rentable === true;
+        if (!producto || producto.rentable !== true) {
+            throw new Error("El producto no es rentable. ");
+            
+        }
+        return true;
     }
 
     //Validar el estado de un producto está disponible (no rentado)
     static validarEstadoProducto(producto) {
-        return producto.estado && producto.rentable === false;
+        if (!producto || producto.estado !== "Disponible" && !this.validarProductoRentable(producto)) {
+            throw new Error("El producto no está disponible. ");
+            
+        }
+        return true;
     }
 
     //Validar si tiene stock suficiente
     static validarStock(producto, cantidad) {
-        return producto.stock >= cantidad;
+        if (!producto) {
+            throw new Error("El producto no existe. ");            
+        }
+        if (producto.stock < cantidad) {
+            throw new Error("El producto no tiene suficiente stock. ");            
+        }
+        return true;
     }
 
     //Validar el precio de venta positivos del producto
     static validarPrecioVentaProducto(producto) {
-        return producto.precioVenta > 0;
+        if (producto.precioVenta <= 0) {
+            throw new Error("El precio de venta debe ser mayor que 0. ");            
+        }
+        return true;
+    }
+
+    //Validar que un texto no esté vacío
+    static validarTextoNoVacio(valor,campo) {
+        if (!valor || valor.trim() === "") {
+            throw new Error(`El campo ${campo} no puede estar vacío. `);            
+        }
+        return true;
     }
 }
 
