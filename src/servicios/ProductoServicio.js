@@ -3,8 +3,9 @@ const Producto = require('../modelos/Producto');
 const Validador = require('../utiles/Validador');
 
 class ProductoServicio {
-    constructor(productoRepositorio) {
+    constructor(productoRepositorio,rentaServicio) {
         this.productoRepo = productoRepositorio;
+        this.rentaServ = rentaServicio;
     }
 
     //Insertar un Producto
@@ -25,77 +26,79 @@ class ProductoServicio {
         return this.productoRepo.insertarProducto(producto);
     }
 
-    //Realizar el cálculo del costo de la renta según su modelo
-    calcularCostoRenta(idProducto,dias,modelo) {
-        const producto = this.productoRepo.buscarPorId(idProducto);
-        if (!producto) throw new Error ('Producto no encontrado');
-
-        let costo = 0;
-
-        if (modelo === "POR_DIA") {
-            if (!producto.rentaProd || !producto.rentaProd.precioDia) {
-                throw new Error ('Precio por día no definido');
-            }
-            //Calculo el costo teniendo en cuenta los días
-            costo = dias * producto.rentaProd.precioDia;
-        } else if (modelo === "LINEAL") {
-            if (!producto.rentaProd || !producto.rentaProd.precioLineal) {
-                throw new Error ('Precio lineal no definido');
-            }
-            //Calculo el costo teniendo en cuenta los días
-            costo = producto.rentaProd.precioLineal;
-        } else {
-            throw new Error ('Modelo de renta inválido');
-        }
-        
-        return costo;
-    }
-
     //Realizar el registro de una renta de un Producto
-    registrarRentaProducto(idProducto,clienteId,dias,modelo) {
-        const producto = this.productoRepo.buscarPorId(idProducto);
+    registrarRentaProducto(renta) {
+        const producto = this.productoRepo.buscarPorId(renta.productoId);
         if (!producto) throw new Error ('Producto no encontrado');
 
         if (!Validador.validarProductoRentable(producto)) throw new Error ('Producto no rentable');
         if (!Validador.validarEstadoProducto(producto)) throw new Error ('Producto ya está rentado');
+        if (!Validador.validarStock(producto)) throw new Error ('Producto sin stock disponible. ');
         
-        //Inicializar rentaProd si estaba null
-        if (!producto.rentaProd) {
-            producto.rentaProd = {modelo, precioDia: 10, precioLineal: 100};    //Objeto simple
-        }
-    
-        //Calcular costo
-        const costo = this.calcularCostoRenta(idProducto,dias,modelo);
+        //Calcular costo        
+        producto.costo = this.rentaServ.calcularCostoRenta(renta.productoId,renta.dias,renta.modelo);
+
+        //Insertar la renta
+        this.rentaServ.registrarRenta(renta);
 
         //Inicializar estado si estaba en null
         if (!producto.estado) {
             producto.estado = {rentado: false, clienteId: null};
         }
 
-        //Actualizo el estado
-        producto.estado.rentado = true;
-        producto.estado.clienteId = clienteId;
+        //Actualizo el estado y el campo rentable
+        producto.rentable = false;
+        producto.estado = {rentado: true, clienteId: renta.clienteId};
 
+        //Actualizar el registro de la rentaProd del Producto
+        producto.rentaProd = {
+            modelo: renta.modelo,
+            precioDia: producto.precioDia,
+            precioLineal: producto.precioLineal
+        }
+
+        //Reducir el stock
+        producto.stock -= 1;
+    
         //Actualizo el producto
         this.productoRepo.actualizarProducto(idProducto,producto);
-    
-        return { producto, costo};
+
+        return { 
+            mensaje: "Renta del producto registrada satisfactoriamente. ",
+            renta,
+            producto};
     }
 
     //Realizar la devolución del Producto
-    devolverProducto(idProducto) {
+    devolverProducto(clienteId,idProducto) {
         const producto = this.productoRepo.buscarPorId(idProducto);
         if (!producto) throw new Error ('Producto no encontrado');
         if (!producto.estado || !producto.estado.rentado) throw new Error ('El producto no estaba rentado');
 
+        //Validar clienteId
+        const renta = this.rentaServ.rentaRepo.mostrarTodo()
+            .filter(r => r.clienteId === clienteId && r.productoId === idProducto);
+        
+        if (!Validador.validarRenta(renta)) throw new Error ('Renta inválida');
+        
+        //Marcar la renta como devuelta
+        this.rentaServ.devolverRenta(renta);
+
         //Formatear a los valores iniciales el producto
-        producto.estado.rentado = false;
-        producto.estado.clienteId = null;
+        producto.rentable = true;
+        producto.estado = {rentado: false, clienteId: null};
+        producto.rentaProd = null;
+
+        //Actualizar el stock del producto para reestablecerlo
+        producto.stock += 1;
 
         //Actualizar el producto y devolverlo
-        this.productoRepo.actualizarProducto(idProducto,producto);
+        this.productoRepo.actualizarProducto(renta.productoId,producto);
 
-        return producto;
+        return { 
+            mensaje: "Renta del producto devuelta satisfactoriamente. ",
+            renta,
+            producto};
     }
 
     //Actualizar el stock del producto

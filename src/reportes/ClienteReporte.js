@@ -5,7 +5,7 @@ class ClienteReporte {
     constructor(clienteRepositorio,ventaRepositorio,rentaRepositorio) {
         this.clienteRepo = clienteRepositorio;
         this.ventaRepo = ventaRepositorio;
-        this.rentaRepo = rentaRepositorio;  //De momento esto devuelve 0 porque todavía no está implementado el repositorio de renta, pero ya lo tenemos
+        this.rentaRepo = rentaRepositorio;  
     }
 
     //Listar todos los cliente
@@ -24,6 +24,22 @@ class ClienteReporte {
         clientes.forEach(c => {
             console.log(`ID: ${c.id} | Nombre: ${c.nombre} | Email: ${c.contacto.email} | Teléfono: ${c.contacto.telefono}`);            
         });
+    }
+
+    //Listar ventas realizadas por un cliente
+    listarVentasPorCliente(clienteId) {
+        return this.ventaRepo.buscarVentaPorCliente(clienteId);
+    }
+
+    //Listar rentas realizadas por un cliente
+    listarRentasPorCliente(clienteId) {
+        return this.rentaRepo.buscarRentaPorCliente(clienteId);
+    }
+
+    //Listar rentas devueltas por un cliente
+    listarRentasDevueltasPorCliente(clienteId) {
+        return this.rentaRepo.buscarRentaPorCliente(clienteId)
+            .filter(r => r.devuelta);
     }
 
     //Total gastado en ventas por cliente
@@ -57,6 +73,9 @@ class ClienteReporte {
     generarReporteCliente(clienteId) {
         return {
             clienteId,
+            ventas: this.listarVentasPorCliente(clienteId).length,
+            rentas: this.listarRentasPorCliente(clienteId).length,
+            devueltas: this.listarRentasDevueltasPorCliente(clienteId).length,
             totalVentas: this.totalGastadoVentas(clienteId),
             totalRentas: this.totalGastadoRentas(clienteId),
             operaciones: this.cantidadOperaciones(clienteId),

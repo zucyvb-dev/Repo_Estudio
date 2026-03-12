@@ -3,8 +3,9 @@ const Cliente = require('../modelos/Cliente');
 const Validador = require('../utiles/Validador');
 
 class ClienteServicio {
-    constructor(clienteRepositorio,ventaServicio) {
+    constructor(clienteRepositorio,productoServicio,ventaServicio) {
         this.clienteRepo = clienteRepositorio;
+        this.productoServ = productoServicio;
         this.ventaServ = ventaServicio;
     }
 
@@ -33,6 +34,7 @@ class ClienteServicio {
     //Registrar una venta en el Historial de un Cliente
     insertarVentaPorCliente(clienteId,items) {
         const cliente = this.clienteRepo.buscarClientePorId(clienteId);
+        Validador.validarObjetoExistente(cliente,"cliente");
         if (!Validador.validarClienteActivo(cliente)) throw new Error ('Cliente inválido o inactivo');
         if (!Validador.validarVenta(venta)) throw new Error ('Venta inválida');
     
@@ -47,12 +49,32 @@ class ClienteServicio {
     //Registrar una renta en el Historial de un Cliente
     insertarRentaPorCliente(clienteId,renta) {
         const cliente = this.clienteRepo.buscarClientePorId(clienteId);
+        Validador.validarObjetoExistente(cliente,"cliente");
         if (!Validador.validarClienteActivo(cliente)) throw new Error ('Cliente inválido o inactivo');
         if (!Validador.validarRenta(renta)) throw new Error ('Renta inválida');
     
-        cliente.registrarRenta(renta);
+        //Insertamos la renta del producto correspondiente
+        this.productoServ.registrarRentaProducto(renta);
+
+        //Insertamos el historial
         this.clienteRepo.guardarHistorialCliente(clienteId,"renta",renta);
         return `Se insertó satisfactoriamente la renta del cliente: ${cliente.nombre}`;
+    }
+ 
+    //Realizar una devolución una renta de un cliente
+    devolverProductoPorCliente(clienteId,idProducto) {
+        const cliente = this.clienteRepo.buscarClientePorId(clienteId);
+        Validador.validarObjetoExistente(cliente,"cliente");
+        if (!Validador.validarClienteActivo(cliente)) throw new Error ('Cliente inválido o inactivo');
+        
+        //Insertamos la renta del producto correspondiente
+        this.productoServ.devolverProducto(clienteId,idProducto);
+
+        //El historial ya tiene la renta, solo queda marcado en el producto y en la renta como devuelta en true
+        return { 
+            mensaje: "La renta realizada por el cliente del producto se devolvió satisfactoriamente. ",
+            idProducto,
+            cliente};
     }
 
     //Consultar el historial completo de un cliente

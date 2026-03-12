@@ -14,16 +14,20 @@ const RentaProdRepositorio = require('./repositorios/RentaProdRepositorio');
 const VentaRepositorio = require('./repositorios/VentaRepositorio');
 const ConfigRepositorio = require('./repositorios/ConfigRepositorio');
 const ItemRepositorio = require('./repositorios/ItemRepositorio');
+const RentaRepositorio = require('./repositorios/RentaRepositorio');
 
 //Exporto los servicios
 const ClienteServicio = require('./servicios/ClienteServicio');
 const ProductoServicio = require('./servicios/ProductoServicio');
 const VentaServicio = require('./servicios/VentaServicio');
+const RentaServicio = require('./servicios/RentaServicio');
 
 //Exporto los reportes
 const ClienteReporte = require('./reportes/ClienteReporte');
 const ProductoReporte = require('./reportes/ProductoReporte');
 const VentaReporte = require('./reportes/VentaReporte');
+const RentaReporte = require('./reportes/RentaReporte');
+const BalanceGeneralReporte = require('./reportes/BalanceGeneral');
 
 //Exporto los modelos
 const Rentas = require('./modelos/Renta');
@@ -42,27 +46,20 @@ class App {
         const ventaRepo = new VentaRepositorio(datos.ventas,itemRepo);
         const configRepo = new ConfigRepositorio(datos.config);
         const itemRepo = new ItemRepositorio(datos.ventas.items);
+        const rentaRepo = new RentaRepositorio(datos.rentas);
 
         //Inicialización de servicios
-        const clienteServ = new ClienteServicio(clienteRepo,ventaServ);
-        const productoServ = new ProductoServicio(productoRepo);
+        const clienteServ = new ClienteServicio(clienteRepo,productoServ,ventaServ);
+        const productoServ = new ProductoServicio(productoRepo,rentaServ);
         const ventaServ = new VentaServicio(ventaRepo,clienteRepo,productoRepo,configRepo);
+        const rentaServ = new RentaServicio(rentaRepo);
         
         //Inicialización de los Reportes
-        const clienteReport = new ClienteReporte(clienteRepo,ventaRepo);//aqui falta rentaRepo
-        const productoReport = new ProductoReporte(productoRepo);
+        const clienteReport = new ClienteReporte(clienteRepo,ventaRepo,rentaRepo);
+        const productoReport = new ProductoReporte(productoRepo,ventaRepo,rentaRepo);
         const ventaReport = new VentaReporte(ventaRepo);
-
-        //Arrays provisionales para ventas y rentas
-        this.rentas = datos.rentas || [];
-    }
-
-    generarIdRenta() {
-        if (this.rentas.length === 0) return "R001";
-        const ultimoRId = this.rentas[this.rentas.length -1].id;
-        const numeroR = parseInt(ultimoRId.substring(1));
-        const numeroRNuevo = numeroR + 1;
-        return "R" + numeroRNuevo.toString().padStart(3,"0");
+        const rentaReport = new RentaReporte(rentaRepo);
+        const balanceGeneralReport = new BalanceGeneralReporte(clienteRepo,productoRepo,ventaRepo,rentaRepo);
     }
 
     //Armar el menú
@@ -77,12 +74,16 @@ class App {
         console.log("7.  Listar todos los clientes activos");
         console.log("8.  Listar todos los productos");        
         console.log("9.  Alerta sobre los productos"); 
-        console.log("10. Reporte: Resumen de Clientes");  
+        console.log("10. Reporte: Resumen por Clientes");  
         console.log("11. Reporte: Resumen de Productos");
-        console.log("12. Reporte: Productos Rentables"); 
+        console.log("12. Reporte: Resumen por Productos"); 
         console.log("13. Reporte: Resumen de Ventas");
         console.log("14. Reporte: Resumen de Ventas por fecha");  
-        console.log("15. Reporte: Resumen de Ventas por periodo");       
+        console.log("15. Reporte: Resumen de Ventas por periodo"); 
+        console.log("16. Reporte: Resumen de Rentas");
+        console.log("17. Reporte: Resumen de Rentas por fecha");  
+        console.log("18. Reporte: Resumen de Rentas por periodo");       
+        console.log("19. Reporte: Balance General"); 
         console.log("0.  Salir");
     }
 
@@ -165,23 +166,15 @@ class App {
                     const idproductoRenta = readLine.question("Producto ID: ");
                     const modeloRenta = readLine.question("Modelo de Renta: ");
                     const diasRenta = parseInt(readLine.question("Cantidad de días: "));
-                    const fechaISORenta = new Date().toISOString();
                     
                     try {
-                        //Autogenerar el id de Ventas
-                        const idRentaGenerado = this.generarIdRenta();
-                        //Calcular el costo de la Renta
-                        let costoRenta = this.productoServ.calcularCostoRenta(idproductoRenta,diasRenta,modeloRenta);
-
+                        
                         //Creo la instancia
                         const rentaI = new Rentas(
-                            idRentaGenerado,
                             idClienteRenta,
                             idproductoRenta,
                             modeloRenta,
                             diasRenta,
-                            costoRenta,
-                            fechaISORenta,
                             false           //Devuelta inicialmente en falso
                         )
                         
@@ -195,10 +188,11 @@ class App {
                     break;
 
                 case "5":
-                    const productoDevuelto = readLine.question("Producto ID: ");
+                    const idClienteDRenta = readLine.question("ID del cliente: ");
+                    const idProductoDRenta = readLine.question("Producto ID: ");
                     
                     try {
-                        const devuelto = productoServ.devolverProducto(productoDevuelto);
+                        const devuelto = clienteServ.devolverProductoPorCliente(idClienteDRenta,idProductoDRenta);
                         console.log("Producto devuelto correctamente",devuelto);
                     } catch (error) {
                         console.error(error.message);
@@ -220,7 +214,7 @@ class App {
                 
                 case "8":
 
-                    console.log("Productos: ", productoReport.listarProductos());
+                    console.log("Productos: ", productoReport.mostrarDetallesProductos());
 
                     break;
                 
@@ -241,20 +235,21 @@ class App {
                 
                 case "11":
 
-                    console.log("Resumen de Productos: ", productoReport.obtenerResumenProducto());
+                    console.log("Resumen de Productos: ", productoReport.generarBalanceProductos());
 
                     break;
                 
                 case "12":
 
-                    console.log("Productos Rentables: ", productoReport.productosRentables());
+                    const idProductoR1 = readLine.question("Producto ID: ");
+
+                    console.log("Resumen por Productos: ", productoReport.generarReporteProducto(idProductoR1));
 
                     break;
                 
                 case "13":
 
-                    console.log("Total de Ventas: ", this.ventaReport.totalVentas());
-                    console.log("{Productos más vendidos: ", this.productoReport.productosMasVendidos());
+                    console.log("Total de Ventas: ", this.ventaReport.generarReporteGeneralVentas());
 
                     break;
 
@@ -272,7 +267,34 @@ class App {
                     console.log("Total de Ventas por periodo: ", this.ventaReport.totalVentasPeriodo(fechaISOVentaIni,fechaISOVentaFin));
 
                     break;
-                    
+                
+                case "16":
+
+                    console.log("Total de Rentas: ", this.rentaReport.generarReporteGeneralRentas());
+
+                    break;
+
+                case "17":
+
+                    const fechaISORenta = new Date().toISOString();
+                    console.log("Total de Rentas por fecha: ", this.rentaReport.listarRentasPorFecha(fechaISOVenta));
+
+                    break;
+
+                case "18":
+
+                    const fechaISORentaIni = new Date().toISOString();
+                    const fechaISORentaFin = new Date().toISOString();
+                    console.log("Total de Rentas por periodo: ", this.rentaReport.listarRentasPorPeriodo(fechaISOVentaIni,fechaISOVentaFin));
+
+                    break;
+                
+                case "19":
+
+                    console.log("Balance General: ", this.balanceGeneralReport.BalanceGeneral());
+
+                    break;
+    
                 case "0":
 
                     console.log("Salir.");

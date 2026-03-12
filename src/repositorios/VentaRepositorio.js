@@ -36,9 +36,8 @@ class VentaRepositorio {
         this.ventas.push(venta);
         return venta;
     }
-
     
-    //Mostrar todos los elementos de los Items
+    //Mostrar todos los elementos de las Ventas
     mostrarTodo(){
         return this.ventas;
     }
@@ -47,10 +46,20 @@ class VentaRepositorio {
     buscarVentaPorCliente(clienteId) {
         return this.ventas.filter(v => v.clienteId === clienteId);
     }
+    
+    //Buscar por una Venta por Producto
+    buscarVentaPorProducto(idProducto) {
+        return this.ventas.filter(v => v.productoId === idProducto);
+    }
 
     //Buscar una venta por fecha
     buscarVentaPorFecha(fecha) {
         return this.ventas.filter(v => v.fechaISO === fecha);
+    }
+
+    //Buscar por id de Venta
+    buscarPorIdVenta(idVenta) {
+        return this.ventas.find(v => v.id === idVenta);
     }
 }
 

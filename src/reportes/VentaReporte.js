@@ -45,6 +45,22 @@ class VentaReportes {
         });
         return conteo;
     }
+    
+    //Total de ingresos por ventas
+    ingresosPorVentas() {
+        return this.ventaRepo.mostrarTodo()
+            .reduce((acc, v) => acc + v.costo, 0);
+    }
+
+    //Balance general de las ventas
+    generarReporteGeneralVentas() {
+        
+        return {
+            totalVentas: this.totalVentas(),
+            productosMasVendidos: this.productosMasVendidos(),
+            ingresosTotales: this.ingresosPorVentas
+        };
+    }
 }
 
 module.exports = VentaReportes;

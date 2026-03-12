@@ -48,7 +48,7 @@ class Validador {
     /**Validaciones de Producto y de los elementos que componen sus clases hijas estado e rentaProd */
     //Validar los datos básicos un producto
     static validarProducto(datosProducto) {
-        if (!datosProducto.id && !datosProducto.nombre && !this.validarPrecioVentaProducto(datosProducto) && !this.validarStock(datosProducto,0)) {
+        if (!datosProducto.id && !datosProducto.nombre && !this.validarPrecioVentaProducto(datosProducto) && !this.validarStock(datosProducto)) {
             throw new Error("El producto no es válido. ");            
         }
         return true;
@@ -73,11 +73,11 @@ class Validador {
     }
 
     //Validar si tiene stock suficiente
-    static validarStock(producto, cantidad) {
+    static validarStock(producto) {
         if (!producto) {
             throw new Error("El producto no existe. ");            
         }
-        if (producto.stock < cantidad) {
+        if (producto.stock <= 0) {
             throw new Error("El producto no tiene suficiente stock. ");            
         }
         return true;
@@ -95,6 +95,30 @@ class Validador {
     static validarTextoNoVacio(valor,campo) {
         if (!valor || valor.trim() === "") {
             throw new Error(`El campo ${campo} no puede estar vacío. `);            
+        }
+        return true;
+    }
+
+    //Validar que se introduzcan números positivo
+    static validarNumeroPositivo(valor, campo) {
+        if (typeof valor !== "number" || valor <= 0){
+            throw new Error(`El campo ${campo} debe ser un número positivo. `);            
+        }
+        return true;
+    }
+
+    //Validar los Objetos existentes
+    static validarObjetoExistente(objeto,campo) {
+        if (!objeto) {
+            throw new Error(`El ${campo} no existe. `);            
+        }
+    }
+
+    //Validar que los modelos de Renta sean (LINEAL/POR_DIA)
+    static validarModeloRenta(modelo) {
+        const tipos_renta = ["LINEAL","POR_DIA"];
+        if (!tipos_renta.includes(modelo)){
+            throw new Error(`Modelo de renta inválido. Debe ser LINEAL o POR_DIA. `);            
         }
         return true;
     }
