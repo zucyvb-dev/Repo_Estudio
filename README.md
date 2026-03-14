@@ -118,4 +118,8 @@ Este archivo demuestra:
 👩‍💻 Autor
 
 Zucel  
+<<<<<<< HEAD
 Proyecto académico y de práctica en arquitectura modular con JavaScript.
+=======
+Proyecto académico y de práctica en arquitectura modular con JavaScript.
+>>>>>>> 60cf7a7f0852ae7e5c5bb151ec996c6bc6c6d68c
