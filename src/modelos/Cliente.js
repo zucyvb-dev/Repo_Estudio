@@ -7,7 +7,7 @@ class Cliente {
     constructor(id,nombre,activo,contacto,historial) {
         this.id = id;
         this.nombre = nombre;
-        this.activo = activo;
+        this.activo = Boolean(activo);
 
         //Contacto y Historial son exclusivos de Clientes
         this.contacto = contacto instanceof Contacto
@@ -16,7 +16,10 @@ class Cliente {
 
         this.historial = historial instanceof Historial
             ? historial
-            :new Historial(historial.ventas || [],historial.rentas || []);        
+            :new Historial(
+                (historial && Array.isArray(historial.ventas)) ? historial.ventas : [],
+                (historial && Array.isArray(historial.rentas)) ? historial.rentas : []
+            );        
     }
     
     //Registrar las ventas del Cliente

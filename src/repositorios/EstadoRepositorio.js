@@ -24,3 +24,5 @@ class EstadoRepositorio {
         return this.estado[index];
     }
 }
+
+module.exports = EstadoRepositorio;

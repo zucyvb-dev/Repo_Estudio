@@ -109,4 +109,5 @@ rentas: [
     }
 ]
 };
- 
+
+module.exports = data;

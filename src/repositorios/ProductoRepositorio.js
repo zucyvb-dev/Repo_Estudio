@@ -4,7 +4,14 @@ const Producto = require('../modelos/Producto');
 class ProductoRepositorio {
     constructor(productosIniciales = [], estadoRepositorio, rentaProdRepositorio) {
         this.producto = productosIniciales.map(p => new Producto(
-            p.id,p.nombre,p.categoria,p.precioVenta,p.rentable,p.rentaProd,p.stock,p.estado
+            p.id,
+            p.nombre,
+            p.categoria,
+            p.precioVenta,
+            p.rentable,
+            p.renta,
+            p.stock,
+            p.estado
         ));
         this.estadoRepo = estadoRepositorio;
         this.rentaProdRepo = rentaProdRepositorio;
@@ -12,10 +19,13 @@ class ProductoRepositorio {
 
     //Insertar productos
     insertarProducto(producto) {
-        if (this.producto.some(p => p.id === producto.id)) {
-            throw new Error("Ya existe ese producto");
-            
+        const existe = this.buscarPorId(producto.id);
+        if (existe) {
+            console.warn("Aviso: ya existe un producto con este id, se actualizará de todas formas");
+            existe.actualizarProducto(producto);
+            return existe;        
         }
+
         this.producto.push(producto);        
         return producto;
     }
@@ -36,6 +46,9 @@ class ProductoRepositorio {
 
     //Buscar un producto por Id
     buscarPorId(idProducto) {
+        
         return this.producto.find(p => p.id === idProducto);
     }
 }
+
+module.exports = ProductoRepositorio;

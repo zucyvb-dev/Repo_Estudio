@@ -15,9 +15,9 @@ class ClienteServicio {
         if (!Validador.validarClienteActivo(clientedatos)) throw new Error ('Cliente inválido o inactivo');
         Validador.validarTextoNoVacio(clientedatos.id,"id");
         Validador.validarTextoNoVacio(clientedatos.nombre,"nombre");
-        Validador.validarTextoNoVacio(clientedatos.email,"email");
+        Validador.validarTextoNoVacio(clientedatos.contacto.email,"email");
         if (!Validador.validarEmail(clientedatos.contacto.email)) throw new Error ('Email inválido');
-        Validador.validarTextoNoVacio(clientedatos.telefono,"telefono");
+        Validador.validarTextoNoVacio(clientedatos.contacto.telefono,"telefono");
         if (!Validador.validarTelefono(clientedatos.contacto.telefono)) throw new Error ('Teléfono inválido');
 
         //Crear la instancia Cliente
@@ -25,7 +25,8 @@ class ClienteServicio {
             clientedatos.id,
             clientedatos.nombre,
             clientedatos.activo,
-            clientedatos.contacto
+            clientedatos.contacto,
+            {ventas: [], rentas: []}
         );
 
         return this.clienteRepo.insertarCliente(nuevoCliente);
@@ -36,11 +37,12 @@ class ClienteServicio {
         const cliente = this.clienteRepo.buscarClientePorId(clienteId);
         Validador.validarObjetoExistente(cliente,"cliente");
         if (!Validador.validarClienteActivo(cliente)) throw new Error ('Cliente inválido o inactivo');
+        Validador.validarObjetoExistente(items,"items");
+        
+        //Insertamos la venta correspondiente y me devuelve el objeto
+        const venta = this.ventaServ.registrarVenta(clienteId, Array.isArray(items) ? items : [items]);
         if (!Validador.validarVenta(venta)) throw new Error ('Venta inválida');
     
-        //Insertamos la venta correspondiente
-        this.ventaServ.registrarVenta(clienteId,items);
-
         //Agregamos el historial de la venta del cliente
         this.clienteRepo.guardarHistorialCliente(clienteId,"venta",venta);
         return `Se insertó satisfactoriamente la venta del cliente: ${cliente.nombre}`;
@@ -49,6 +51,9 @@ class ClienteServicio {
     //Registrar una renta en el Historial de un Cliente
     insertarRentaPorCliente(clienteId,renta) {
         const cliente = this.clienteRepo.buscarClientePorId(clienteId);
+        if (!cliente) {
+            throw new Error("El cliente es inválido o no existe");            
+        }
         Validador.validarObjetoExistente(cliente,"cliente");
         if (!Validador.validarClienteActivo(cliente)) throw new Error ('Cliente inválido o inactivo');
         if (!Validador.validarRenta(renta)) throw new Error ('Renta inválida');
@@ -58,7 +63,7 @@ class ClienteServicio {
 
         //Insertamos el historial
         this.clienteRepo.guardarHistorialCliente(clienteId,"renta",renta);
-        return `Se insertó satisfactoriamente la renta del cliente: ${cliente.nombre}`;
+        return `del cliente: ${cliente.nombre}`;
     }
  
     //Realizar una devolución una renta de un cliente
@@ -72,7 +77,7 @@ class ClienteServicio {
 
         //El historial ya tiene la renta, solo queda marcado en el producto y en la renta como devuelta en true
         return { 
-            mensaje: "La renta realizada por el cliente del producto se devolvió satisfactoriamente. ",
+            mensaje: `por el cliente: ${cliente.nombre}. `,
             idProducto,
             cliente};
     }
@@ -84,14 +89,14 @@ class ClienteServicio {
 
     //Consultar las ventas de un Cliente
     obtenerVentasPorCliente(clienteId) {
-        const historial = this.clienteRepo.obtenerHistorialPorCliente(clienteId);        
-        return historial ? historial.ventas : [];
+        const historial = this.clienteRepo.obtenerHistorialPorCliente(clienteId);   
+        return historial && Array.isArray(historial.ventas) ? historial.ventas : [];
     }
     
     //Consultar las rentas de un Cliente
     obtenerRentasPorCliente(clienteId) {
         const historial = this.clienteRepo.obtenerHistorialPorCliente(clienteId);        
-        return historial ? historial.rentas : [];
+        return historial && Array.isArray(historial.rentas) ? historial.rentas : [];
     }
 
     //Verificar si un cliente tiene una venta

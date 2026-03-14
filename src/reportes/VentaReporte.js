@@ -48,17 +48,20 @@ class VentaReportes {
     
     //Total de ingresos por ventas
     ingresosPorVentas() {
-        return this.ventaRepo.mostrarTodo()
-            .reduce((acc, v) => acc + v.costo, 0);
+        const ventas = this.ventaRepo.mostrarTodo() || [];
+        return ventas.reduce((acc, v) => {
+            const costo = Number(v?.costo);
+            return acc + (Number.isFinite(costo) ? costo : 0);
+        }, 0);
     }
-
+    
     //Balance general de las ventas
     generarReporteGeneralVentas() {
         
         return {
             totalVentas: this.totalVentas(),
             productosMasVendidos: this.productosMasVendidos(),
-            ingresosTotales: this.ingresosPorVentas
+            ingresosTotales: this.ingresosPorVentas()
         };
     }
 }

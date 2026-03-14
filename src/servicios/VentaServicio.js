@@ -30,8 +30,13 @@ class VentaServicio {
         );
     
         //Obtener configuración activa (tax, moneda)
-        const config = this.configRepo.mostrarTodo()[0]; //primera activa
-        const tax = subtotal * config.TAX;
+        const configs = this.configRepo.mostrarTodo();
+        if (!configs || configs.length === 0) {
+            throw new Error("No hay configuración activa (TAX, moneda, etc.)");
+        }
+        const config = configs[0];
+        const taxRate = config.TAX ?? config.tax ?? 0;
+        const tax = subtotal * taxRate;
         const total = subtotal + tax;
 
         //Generar el ID y la fecha
@@ -41,9 +46,12 @@ class VentaServicio {
         //Crear el objeto venta
         const nuevaVenta = new Venta(idVenta,clienteId,items,subtotal,tax,total,fechaISO);
 
-        //Insertar el repositorio    
-        return this.ventaRepo.insertarVenta(nuevaVenta);
+        //Insertar el repositorio   
+        this.ventaRepo.insertarVenta(nuevaVenta);
+        
+        //Devolver el objeto venta
+        return nuevaVenta;
     }
-
-    //Buscar ventas por Cliente
 }
+
+module.exports = VentaServicio;

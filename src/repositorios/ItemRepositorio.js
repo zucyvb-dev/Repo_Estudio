@@ -11,7 +11,7 @@ class ItemRepositorio {
     //Insertar un nuevo Item
     insertarItem(item) {
         //Validar para evitar duplicados
-        const existe = this.item.buscarItem(item.productoId,item.cantidad,item.precioUnitario);
+        const existe = this.buscarItem(item.productoId,item.cantidad,item.precioUnitario);
 
         if (existe) {
             throw new Error("Ese ítem ya existe en el repositorio");            

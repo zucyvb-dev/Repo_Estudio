@@ -11,7 +11,7 @@ class RentaRepositorio {
                 r.modelo,
                 r.dias,
                 r.costo,
-                r.fechaISO,
+                r.fechaISO || new Date().toISOString().split("T")[0],
                 r.devuelta
             )
         )

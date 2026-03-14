@@ -26,11 +26,19 @@ class ClienteRepositorio {
     }
 
     //Agregar un nuevo cliente
-    insertarCliente(clienteDatos) {
-        const existe = this.buscarClientePorId(clienteDatos.id);
+    insertarCliente(clienteNuevo) {
+        const existe = this.buscarClientePorId(clienteNuevo.id);
         if (existe) {
             throw new Error("Ya existe ya existe ese cliente");            
         }
+
+        // Asegurar estructura de historial en el cliente nuevo
+        clienteNuevo.historial = clienteNuevo.historial && typeof clienteNuevo.historial === 'object'
+            ? {
+                ventas: Array.isArray(clienteNuevo.historial.ventas) ? clienteNuevo.historial.ventas : [],
+                rentas: Array.isArray(clienteNuevo.historial.rentas) ? clienteNuevo.historial.rentas : []
+            }
+            : { ventas: [], rentas: [] };
 
         this.cliente.push(clienteNuevo);    
         return clienteNuevo;
@@ -72,13 +80,20 @@ class ClienteRepositorio {
     //Guardar el historial de un Cliente
     guardarHistorialCliente(clienteId,tipo,elemento) {
         const cliente = this.buscarClientePorId(clienteId);
-        if (!cliente) return;
+        if (!cliente) throw new Error("Cliente no encontrado");
         
-        if (tipo === "venta") {
+        if (!cliente.historial || typeof cliente.historial !== 'object') {
+            cliente.historial = { ventas: [], rentas: [] };
+        }
+
+        if (tipo === 'venta') {
+            cliente.historial.ventas = Array.isArray(cliente.historial.ventas) ? cliente.historial.ventas : [];
             cliente.historial.ventas.push(elemento);
-        } else if (tipo === "renta"){
+        } else if (tipo === 'renta') {
+            cliente.historial.rentas = Array.isArray(cliente.historial.rentas) ? cliente.historial.rentas : [];
             cliente.historial.rentas.push(elemento);
         }
+       
         return cliente.historial;
     }
 }

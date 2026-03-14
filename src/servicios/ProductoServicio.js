@@ -11,23 +11,34 @@ class ProductoServicio {
     //Insertar un Producto
     insertarProducto(datosProducto) {
         if (!Validador.validarProducto(datosProducto)) throw new Error("Producto inválido");
-        Validador.validarTextoNoVacio(datosProducto.id,"id");
-        Validador.validarTextoNoVacio(datosProducto.nombre,"nombre");
+        Validador.validarTextoNoVacio(datosProducto.id, "id");
+        Validador.validarTextoNoVacio(datosProducto.nombre, "nombre");
+
+        const precioVenta = Number.isFinite(Number(datosProducto.precioVenta))
+            ? Number(datosProducto.precioVenta)
+            : 0;
+
+        const rentable = datosProducto.rentable === true || datosProducto.rentable === 'true';
+        const stock = Number.isFinite(Number(datosProducto.stock)) ? Number(datosProducto.stock) : 0;
+
         const producto = new Producto(
             datosProducto.id,
             datosProducto.nombre,
             datosProducto.categoria,
-            datosProducto.precioVenta,
-            datosProducto.rentable,
-            null,   //rentaProd en null por defecto
-            datosProducto.stock,
-            null    //estado null
+            precioVenta,                          // precioVenta directo
+            rentable,                             // rentable
+            datosProducto.rentaProd ?? null,      // rentaProd
+            stock,                                // stock
+            datosProducto.estado ?? { rentado: false, clienteId: null } // estado inicial seguro
         );
+
+        //Insertar el producto y devolverlo
         return this.productoRepo.insertarProducto(producto);
     }
 
     //Realizar el registro de una renta de un Producto
     registrarRentaProducto(renta) {
+        
         const producto = this.productoRepo.buscarPorId(renta.productoId);
         if (!producto) throw new Error ('Producto no encontrado');
 
@@ -35,11 +46,8 @@ class ProductoServicio {
         if (!Validador.validarEstadoProducto(producto)) throw new Error ('Producto ya está rentado');
         if (!Validador.validarStock(producto)) throw new Error ('Producto sin stock disponible. ');
         
-        //Calcular costo        
-        producto.costo = this.rentaServ.calcularCostoRenta(renta.productoId,renta.dias,renta.modelo);
-
         //Insertar la renta
-        this.rentaServ.registrarRenta(renta);
+        this.rentaServ.registrarRenta(renta,producto);
 
         //Inicializar estado si estaba en null
         if (!producto.estado) {
@@ -61,10 +69,9 @@ class ProductoServicio {
         producto.stock -= 1;
     
         //Actualizo el producto
-        this.productoRepo.actualizarProducto(idProducto,producto);
+        this.productoRepo.actualizarProducto(renta.productoId,producto);
 
         return { 
-            mensaje: "Renta del producto registrada satisfactoriamente. ",
             renta,
             producto};
     }
@@ -96,7 +103,6 @@ class ProductoServicio {
         this.productoRepo.actualizarProducto(renta.productoId,producto);
 
         return { 
-            mensaje: "Renta del producto devuelta satisfactoriamente. ",
             renta,
             producto};
     }

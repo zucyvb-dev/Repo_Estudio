@@ -3,7 +3,9 @@ const RentaProd = require('../modelos/RentaProd');
 
 class RentaProdRepositorio {
     constructor(rentaProdIniciales = []) {
-        this.rentaProd = rentaProdIniciales.map(r => new RentaProd(r.modelo, r.precioDia, r.precioLineal));
+        this.rentaProd = rentaProdIniciales
+            .filter(r => r !== null)
+            .map(r => new RentaProd(r.modelo, r.precioDia, r.precioLineal));
     }
 
     //Mostrar todos los elementos de las tablas
@@ -25,3 +27,5 @@ class RentaProdRepositorio {
         return this.RentaProd[index];
     }
 }
+
+module.exports = RentaProdRepositorio;

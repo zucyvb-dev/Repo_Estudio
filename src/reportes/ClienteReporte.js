@@ -8,7 +8,7 @@ class ClienteReporte {
         this.rentaRepo = rentaRepositorio;  
     }
 
-    //Listar todos los cliente
+    //Listar todos los clientes
     listarClientes() {
         const clientes = this.clienteRepo.mostrarTodo();
         console.log("\n=== TODOS LOS CLIENTES ===");
@@ -19,7 +19,7 @@ class ClienteReporte {
 
     //Listar todos los clientes activos
     listarClientesActivos() {
-        const clientes = this.clienteRepo.mostrarTodo().filter(c => Validador.validarClienteActivo(c));
+        const clientes = this.clienteRepo.mostrarTodo().filter(c => c.activo === true);
         console.log("\n=== CLIENTES ACTIVOS ===");
         clientes.forEach(c => {
             console.log(`ID: ${c.id} | Nombre: ${c.nombre} | Email: ${c.contacto.email} | Teléfono: ${c.contacto.telefono}`);            
@@ -56,10 +56,20 @@ class ClienteReporte {
     }
 
     //Cantidad de operaciones realizadas por cliente de (ventas + rentas)
+    // Método seguro para contar operaciones
     cantidadOperaciones(clienteId) {
-        const venta = this.ventaRepo.buscarVentaPorCliente(clienteId);
-        const renta = this.rentaRepo.buscarRentaPorCliente(clienteId);
-        return venta + renta;
+    const ventasRaw = this.ventaRepo.buscarVentaPorCliente(clienteId);
+    const rentasRaw = this.rentaRepo.buscarRentaPorCliente(clienteId);
+
+    const ventasCount = Array.isArray(ventasRaw)
+        ? ventasRaw.length
+        : (Number.isFinite(Number(ventasRaw)) ? Number(ventasRaw) : 0);
+
+    const rentasCount = Array.isArray(rentasRaw)
+        ? rentasRaw.length
+        : (Number.isFinite(Number(rentasRaw)) ? Number(rentasRaw) : 0);
+
+    return ventasCount + rentasCount;
     }
 
     //Listado de IDs de ventas y rentas del historial del cliente

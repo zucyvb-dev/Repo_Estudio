@@ -3,8 +3,8 @@
 class Item {
     constructor(productoId,cantidad,precioUnitario) {
         this.productoId = productoId;
-        this.cantidad = cantidad;
-        this.precioUnitario = precioUnitario;
+        this.cantidad = Number.isFinite(Number(cantidad)) ? Number(cantidad) : 0;
+        this.precioUnitario = Number.isFinite(Number(precioUnitario)) ? Number(precioUnitario) : 0; ;
     }
 
     calcularSubTotal(){

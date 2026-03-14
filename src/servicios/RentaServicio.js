@@ -14,6 +14,10 @@ class RentaServicio {
         Validador.validarNumeroPositivo(dias,"dias")
         Validador.validarModeloRenta(modelo);
 
+        if (!producto.rentaProd) {
+            throw new Error("El producto no tiene configurada la información de renta");
+        }
+
         let costo = 0;
 
         if (modelo === "POR_DIA") {
@@ -30,7 +34,7 @@ class RentaServicio {
     }
     
     //Insertar una Venta
-    registrarRenta(renta) {
+    registrarRenta(renta,producto) {
         //Validar el Objeto
         Validador.validarObjetoExistente(renta,"renta");
 
@@ -39,17 +43,17 @@ class RentaServicio {
         Validador.validarObjetoExistente(renta.productoId,"productoId");
         Validador.validarModeloRenta(renta.modelo);
         Validador.validarNumeroPositivo(renta.dias,"dias");
-        Validador.validarObjetoExistente(renta.devuelta, "devuelta")
+        //Validador.validarObjetoExistente(renta.devuelta, "devuelta")
 
         //Generar el ID y la fecha
         const idRenta = this.rentaRepo.generarIdRenta();
         const fechaISO = new Date().toISOString().split("T")[0];
 
         //Calcular el costo y asignarlo al objeto
-        const costo = this.calcularCostoRenta(renta.productoId,renta.dias,renta.modelo);
+        const costo = this.calcularCostoRenta(producto,renta.dias,renta.modelo);
         
         //Crear el objeto renta
-        const nuevaRenta = new Venta(idRenta,clienteId,productoId,modelo,dias,costo,fechaISO,devuelta);
+        const nuevaRenta = new Renta(idRenta,renta.clienteId,renta.productoId,renta.modelo,renta.dias,costo,fechaISO,renta.devuelta);
         
         return this.rentaRepo.insertarRenta(nuevaRenta);
     }
@@ -63,6 +67,7 @@ class RentaServicio {
         renta.devuelta = true;
 
         return renta;
-    }
-        
+    }        
 }
+
+module.exports = RentaServicio;

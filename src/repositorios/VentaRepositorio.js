@@ -4,21 +4,28 @@ const Item = require('../modelos/Item');
 
 class VentaRepositorio {
     constructor(ventaIniciales = [], itemRepositorio) {
+        // Si no es array, inicializa vacío
+        if (!Array.isArray(ventaIniciales)) {
+            this.ventas = [];
+        } else {
+            this.ventas = ventaIniciales.map(v =>
+                new Venta(
+                    v.id,
+                    v.clienteId,
+                    Array.isArray(v.items) 
+                        ? v.items.map(i => new Item(i.productoId, i.cantidad, i.precioUnitario))    //instaciación directa de ítems
+                        : [], // si no hay items, arranca vacío
+                    v.subtotal || 0,
+                    v.tax || 0,
+                    v.total || 0,
+                    v.fechaISO || new Date().toISOString().split("T")[0]
+                )
+            );
+        }
+
         this.itemRepo = itemRepositorio;
-        this.ventas = ventaIniciales.map(v =>
-            new Venta(
-                v.id,
-                v.clienteId,
-                v.items.map(i => new Item(i.productoId,i.cantidad,i.precioUnitario)), //instaciación directa de ítems
-                v.subtotal,
-                v.tax,
-                v.total,
-                v.fechaISO
-            )
-        );
     }
 
-    
     //Funciones auxiliares par IDs incrementales
     generarIdVenta() {
         if (this.ventas.length === 0) return "V001";

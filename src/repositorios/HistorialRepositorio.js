@@ -4,11 +4,14 @@ const Historial = require('../modelos/Historial');
 
 class HistorialRepositorio {
     constructor(historialInicial = []) {
-        this.historial = historialInicial.map(h => ({
-            historial: new Historial(h.ventas || [],h.rentas || [])
-        }));  
+        this.historial = Array.isArray(historialInicial)
+        ? historialInicial.map(h => ({
+            ventas: Array.isArray(h && h.ventas) ? h.ventas : [],
+            rentas: Array.isArray(h && h.rentas) ? h.rentas : []
+            }))
+        : [];
     }
-
+   
     //Mostrar todos los elementos del Historial
     mostrarTodo() {
         return this.historial;

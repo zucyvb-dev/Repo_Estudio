@@ -13,9 +13,9 @@ class Venta {
             item => item instanceof ItemVenta ? item : new ItemVenta(item.productoId,item.cantidad,item.precioUnitario)
         );
 
-        this.subtotal = subtotal;
-        this.taxId = taxId;
-        this.total = total;
+        this.subtotal = Number.isFinite(Number(subtotal)) ? Number(subtotal) : 0;
+        this.taxId = Number.isFinite(Number(taxId)) ? Number(taxId) : 0;
+        this.total = Number.isFinite(Number(total)) ? Number(total) : 0;
         this.fechaISO = fechaISO;
     }
 }

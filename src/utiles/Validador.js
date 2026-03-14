@@ -23,7 +23,7 @@ class Validador {
 
     //Verificar si el formato del teléfono es válido
     static validarTelefono(telefono) {
-        if (typeof telefono === 'string' && telefono.replace(/\D/g, '').length >= 7) {
+        if (typeof telefono === 'string' && telefono.replace(/\D/g, '').length < 7) {
             throw new Error("El teléfono debe tener al menos 7 dígitos. ");            
         }
         return true;
@@ -101,7 +101,7 @@ class Validador {
 
     //Validar que se introduzcan números positivo
     static validarNumeroPositivo(valor, campo) {
-        if (typeof valor !== "number" || valor <= 0){
+        if (typeof valor !== "number" || valor < 0){
             throw new Error(`El campo ${campo} debe ser un número positivo. `);            
         }
         return true;

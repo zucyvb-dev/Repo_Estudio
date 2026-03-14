@@ -3,8 +3,8 @@
 const Config = require('../modelos/Config');
 
 class ConfigRepositorio {
-    constructor(configInicial = []) {
-        this.config = configInicial.map(c => new Config(c.TAX,c.moneda))
+    constructor(configInicial = {}) {
+        this.config = [new Config(configInicial.TAX, configInicial.moneda)];
     }
 
     //Insertar nuevas configuraciones

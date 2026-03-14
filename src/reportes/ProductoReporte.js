@@ -10,10 +10,14 @@ class ProductoReporte {
 
     //Listar todos los productos existentes
     listarProductos() {
-        this.productoRepo.mostrarTodo().forEach(p => {
-            console.log(`${p.id} - ${p.nombre} (${p.stock})`)            
-        });
+        const productos = this.productoRepo.mostrarTodo();
+        for (let i in productos) {
+            const p = productos[i];
+            console.log(`${p.id} - ${p.nombre} (${p.stock})`);
+        }
+        return productos; // <- importante
     }
+
 
     //Obtener un resumen de los productos
     obtenerResumenProducto() {
@@ -27,9 +31,10 @@ class ProductoReporte {
     //Mostrar más detalles de los productos
     mostrarDetallesProductos() {
         const productos = this.productoRepo.mostrarTodo();
-        
-        for (let propiedad in productos) {
-            console.log(`${propiedad}: ${productos[propiedad]}`);            
+
+        for (let i in productos) {
+            // i es "0", "1", ...
+            console.log(`${i}: ${JSON.stringify(productos[i], null, 2)}`);
         }
     }
 
@@ -103,8 +108,8 @@ class ProductoReporte {
             cantidadProductos: this.listarProductos().length,
             cantidadRentables: this.productosRentables().length,
             cantidadSinStock: this.productorSinStock().length,
-            productosSinStock: this.hayProductosSinStock().length,
-            productosConPreciosValidos: this.todosPreciosValidosProductos().length,
+            productosSinStock: this.hayProductosSinStock().length || 0,
+            productosConPreciosValidos: this.todosPreciosValidosProductos().length || 0,
             ingresosTotales: this.calcularIngresosTotalesProductos()
         };
     }
