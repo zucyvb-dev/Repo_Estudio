@@ -43,7 +43,7 @@ describe('Contacto', () => {
     const con = new Contacto('marta@example.com', '555-1234');
     con.actualizarTelefono('555-9999');
     expect(con.telefono).toBe('555-9999');
-    expect(con.email).toBe('zucel@example.com'); // se mantiene igual
+    expect(con.email).toBe('Rosy@example.com'); // se mantiene igual
   });
 
 });
