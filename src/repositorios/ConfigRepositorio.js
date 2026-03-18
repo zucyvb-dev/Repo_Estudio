@@ -30,13 +30,13 @@ class ConfigRepositorio {
 
     //Buscar por el tipo de tax
     buscarPorTAX(tax){
-        return this.config(c => c.TAX === tax);
+        return this.config.find(c => c.TAX === tax);
     }
 
     
     //Buscar por el tipo de moneda
     buscarPorMoneda(moneda){
-        return this.config(c => c.moneda === moneda);
+        return this.config.find(c => c.moneda === moneda);
     }
 }
 

@@ -14,12 +14,12 @@ class ContactoRepositorio {
 
     //Buscar por email
     buscarPorEMail(email){
-        return this.contacto(c => c.email === email) || null;
+        return this.contacto.find(c => c.email === email) || null;
     }
     
     //Buscar por telefono
     buscarPorTelefono(telefono){
-        return this.contacto(c => c.telefono === telefono) || null;
+        return this.contacto.find(c => c.telefono === telefono) || null;
     }
 
 }
