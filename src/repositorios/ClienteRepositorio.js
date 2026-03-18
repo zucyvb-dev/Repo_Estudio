@@ -46,7 +46,7 @@ class ClienteRepositorio {
 
     //Eliminar un cliente
     eliminarCliente(clienteId){
-        this.cliente.filter(c => c.id !== clienteId)
+        this.cliente = this.cliente.filter(c => c.id !== clienteId);
     }
 
     //Buscar por Email
@@ -62,13 +62,13 @@ class ClienteRepositorio {
     //Buscar si un cliente tiene una venta especifica
     buscarHVentasCliente(clienteId,ventasId) {
         const cliente = this.buscarClientePorId(clienteId)
-        return cliente ? historial.ventas.include(ventasId) : false;
+        return cliente ? cliente.historial.ventas.includes(ventasId) : false;
     }
 
     //Buscar si un cliente tiene una renta especifica
     buscarHRentasCliente(clienteId,rentaId) {
         const cliente = this.buscarClientePorId(clienteId)
-        return cliente ? historial.rentas.include(rentaId) : false;
+        return cliente ? cliente.historial.rentas.includes(rentaId) : false;
     }
 
     //Buscar historial por Cliente

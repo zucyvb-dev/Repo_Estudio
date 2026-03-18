@@ -31,7 +31,7 @@ class Validador {
 
     //Verificar si la venta es válida
     static validarVenta(venta) {
-        if (!venta && !venta.id && !venta.clienteId && !venta.items && venta.total < 0) {
+        if (!venta || !venta.id || !venta.clienteId || !venta.items && venta.total < 0) {
             throw new Error("La venta no es válida. ");            
         }
         return true;
@@ -39,7 +39,7 @@ class Validador {
     
     //Verificar si la renta es válida
     static validarRenta(renta) {
-        if (!renta && !renta.id && !renta.productoId && !renta.costo < 0) {
+        if (!renta || !renta.id || !renta.productoId || !renta.costo < 0) {
             throw new Error("La renta no es válida. ");            
         }
         return true;
@@ -48,7 +48,7 @@ class Validador {
     /**Validaciones de Producto y de los elementos que componen sus clases hijas estado e rentaProd */
     //Validar los datos básicos un producto
     static validarProducto(datosProducto) {
-        if (!datosProducto.id && !datosProducto.nombre && !this.validarPrecioVentaProducto(datosProducto) && !this.validarStock(datosProducto)) {
+        if (!datosProducto.id || !datosProducto.nombre || !this.validarPrecioVentaProducto(datosProducto) || !this.validarStock(datosProducto)) {
             throw new Error("El producto no es válido. ");            
         }
         return true;
@@ -65,7 +65,7 @@ class Validador {
 
     //Validar el estado de un producto está disponible (no rentado)
     static validarEstadoProducto(producto) {
-        if (!producto || producto.estado !== "Disponible" && !this.validarProductoRentable(producto)) {
+        if (!producto || producto.estado !== "Disponible" || !this.validarProductoRentable(producto)) {
             throw new Error("El producto no está disponible. ");
             
         }

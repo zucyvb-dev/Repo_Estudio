@@ -2,7 +2,7 @@
 const readline = require('readline-sync');
 
 //Importar datos iniciales
-const datos = require('../src/datos/datos');
+const datos = require('../src/datos/Datos');
 
 //Exporto los repositorios
 const ClienteRepositorio = require('./repositorios/ClienteRepositorio');
