@@ -1,35 +1,47 @@
 /**Maneja la lágica del negocio de Cliente y sus clases hijas contacto e historial */
-const Cliente = require('../modelos/Cliente');
+const ClienteFabrica = require('../fabricas/ClienteFabrica');
 const Validador = require('../utiles/Validador');
 
 class ClienteServicio {
-    constructor(clienteRepositorio,productoServicio,ventaServicio) {
+    constructor(clienteRepositorio,productoServicio,ventaServicio, notificador) {
         this.clienteRepo = clienteRepositorio;
         this.productoServ = productoServicio;
         this.ventaServ = ventaServicio;
+        this.notificador = notificador;
     }
 
     //Registrar un nuevo cliente
     insertarNuevoCliente(clientedatos) {
-        //Validaciones de los datos
+        //Validaciones de los datos del Cliente
         if (!Validador.validarClienteActivo(clientedatos)) throw new Error ('Cliente inválido o inactivo');
-        Validador.validarTextoNoVacio(clientedatos.id,"id");
+
+        //Valida los atributos de Cliente
         Validador.validarTextoNoVacio(clientedatos.nombre,"nombre");
         Validador.validarTextoNoVacio(clientedatos.contacto.email,"email");
         if (!Validador.validarEmail(clientedatos.contacto.email)) throw new Error ('Email inválido');
         Validador.validarTextoNoVacio(clientedatos.contacto.telefono,"telefono");
         if (!Validador.validarTelefono(clientedatos.contacto.telefono)) throw new Error ('Teléfono inválido');
 
+        //Genero el IDs
+        const nuevoId = this.clienteRepo.generarIdCliente();
+
         //Crear la instancia Cliente
-        const nuevoCliente = new Cliente(
-            clientedatos.id,
-            clientedatos.nombre,
-            clientedatos.activo,
-            clientedatos.contacto,
-            {ventas: [], rentas: []}
+        const nuevoCliente = ClienteFabrica.crearCliente(
+            nuevoId,                     //Autoincremental
+            {
+                nombre: clientedatos.nombre,
+                activo: clientedatos.activo,
+                contacto: clientedatos.contacto,
+                historial: { ventas: [], rentas: [] }
+            }
         );
 
-        return this.clienteRepo.insertarCliente(nuevoCliente);
+        //Notificar la inserción de nuevo cliente a los observadores
+        this.notificador.notificar("CLIENTE_INSERTADO", nuevoCliente);
+
+        const clienteInsertado = this.clienteRepo.insertarCliente(nuevoCliente);
+
+        return clienteInsertado;
     }
 
     //Registrar una venta en el Historial de un Cliente
@@ -45,6 +57,10 @@ class ClienteServicio {
     
         //Agregamos el historial de la venta del cliente
         this.clienteRepo.guardarHistorialCliente(clienteId,"venta",venta);
+
+        //Notificar la inserción de una nueva venta del cliente a los observadores
+        this.notificador.notificar("CLIENTE_VENTA_INSERTADA", {cliente, venta});
+
         return `Se insertó satisfactoriamente la venta del cliente: ${cliente.nombre}`;
     }
 
@@ -56,13 +72,17 @@ class ClienteServicio {
         }
         Validador.validarObjetoExistente(cliente,"cliente");
         if (!Validador.validarClienteActivo(cliente)) throw new Error ('Cliente inválido o inactivo');
-        if (!Validador.validarRenta(renta)) throw new Error ('Renta inválida');
-    
+        Validador.validarObjetoExistente(renta,"renta");
+        
         //Insertamos la renta del producto correspondiente
         this.productoServ.registrarRentaProducto(renta);
 
         //Insertamos el historial
         this.clienteRepo.guardarHistorialCliente(clienteId,"renta",renta);
+                
+        //Notificar la inserción de una nueva renta del cliente a los observadores
+        this.notificador.notificar("CLIENTE_RENTA_INSERTADA", {cliente, renta});
+
         return `del cliente: ${cliente.nombre}`;
     }
  
@@ -75,11 +95,13 @@ class ClienteServicio {
         //Insertamos la renta del producto correspondiente
         this.productoServ.devolverProducto(clienteId,idProducto);
 
+        //Notificar la inserción de una nueva renta del cliente a los observadores
+        this.notificador.notificar("CLIENTE_RENTA_DEVUELTA", {cliente, idProducto});
+
         //El historial ya tiene la renta, solo queda marcado en el producto y en la renta como devuelta en true
         return { 
-            mensaje: `por el cliente: ${cliente.nombre}. `,
-            idProducto,
-            cliente};
+            Por: ` el cliente: ${cliente.nombre}. `,
+            Producto: idProducto};
     }
 
     //Consultar el historial completo de un cliente
@@ -126,6 +148,10 @@ class ClienteServicio {
         if (!Validador.validarEmail(nuevoEmail)) throw new Error ('Email inválido');
 
         if (cliente) cliente.contacto.actualizarEmail(nuevoEmail);
+
+        // Notificar actualización de los datos del Cliente
+        this.notificador.notificar("CLIENTE_ACTUALIZADO", cliente);
+
         return 'Se actualizó satisfactoriamente';
     }
     
@@ -136,6 +162,10 @@ class ClienteServicio {
         if (!Validador.validarTelefono(nuevoTelefono)) throw new Error ('Teléfono inválido');
 
         if (cliente) cliente.contacto.actualizarTelefono(nuevoTelefono);
+        
+        // Notificar actualización de los datos del Cliente
+        this.notificador.notificar("CLIENTE_ACTUALIZADO", cliente);
+
         return 'Se actualizó satisfactoriamente';
     }
 }

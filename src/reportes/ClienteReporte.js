@@ -1,11 +1,20 @@
 /**Maneja todos los reportes y listado de clientes */
-const Validador = require('../utiles/Validador');
 
 class ClienteReporte {
     constructor(clienteRepositorio,ventaRepositorio,rentaRepositorio) {
         this.clienteRepo = clienteRepositorio;
         this.ventaRepo = ventaRepositorio;
         this.rentaRepo = rentaRepositorio;  
+    }
+
+    //Configurar el reporte de Cliente como Observador
+    actualizar(evento, data) {
+        if (evento === "VENTA_REGISTRADA") {
+            console.log(`ClienteReporte: nueva venta para cliente ${data.clienteId}`);
+        }
+        if (evento === "RENTA_REGISTRADA") {
+            console.log(`ClienteReporte: nueva renta para cliente ${data.clienteId}`);
+        }
     }
 
     //Listar todos los clientes
@@ -52,9 +61,9 @@ class ClienteReporte {
     totalGastadoRentas(clienteId) {
         if (!this.rentaRepo) return 0;  //Validación eventual hasta que se implemente
         return this.rentaRepo.buscarRentaPorCliente(clienteId)
-            .reduce((acc, v) => acc + v.total, 0);
+            .reduce((acc, v) => acc + (v && typeof v.total  === "number" ? v.total : 0), 0);
     }
-
+    
     //Cantidad de operaciones realizadas por cliente de (ventas + rentas)
     // Método seguro para contar operaciones
     cantidadOperaciones(clienteId) {

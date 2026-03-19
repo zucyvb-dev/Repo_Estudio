@@ -1,13 +1,14 @@
 /**Maneja la lógica del negocio de las Ventas y de su clase hija Items */
-const Venta = require('../modelos/Venta');
+const VentaFabrica = require('../fabricas/VentaFabrica');
 const Validador = require('../utiles/Validador');
 
 class VentaServicio {
-    constructor(ventaRepositorio,clienteRepositorio,productoRepositorio,configRepositorio) {
+    constructor(ventaRepositorio,clienteRepositorio,productoRepositorio,configRepositorio, notificador) {
         this.ventaRepo = ventaRepositorio;
         this.clienteRepo = clienteRepositorio;
         this.productoRepo = productoRepositorio;
         this.configRepo = configRepositorio;
+        this.notificador = notificador;
     }
 
     //Registrar un venta
@@ -44,10 +45,13 @@ class VentaServicio {
         const fechaISO = new Date().toISOString().split("T")[0];
 
         //Crear el objeto venta
-        const nuevaVenta = new Venta(idVenta,clienteId,items,subtotal,tax,total,fechaISO);
+        const nuevaVenta = VentaFabrica.crearVenta(idVenta,clienteId,items,subtotal,tax,total,fechaISO);
 
         //Insertar el repositorio   
         this.ventaRepo.insertarVenta(nuevaVenta);
+
+        // Notificar a los observadores
+        this.notificador.notificar("VENTA_REGISTRADA", nuevaVenta);
         
         //Devolver el objeto venta
         return nuevaVenta;

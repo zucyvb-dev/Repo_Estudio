@@ -8,6 +8,16 @@ class ProductoReporte {
         this.rentaRepo = rentaRepositorio;
     }
 
+    //Configurar el reporte de Producto como Observador
+    actualizar(evento, data) {
+        if (evento === "PRODUCTO_RENTADO") {
+            console.log(`ProductoReporte: producto ${data.productoId} rentado`);
+        }
+        if (evento === "PRODUCTO_DEVUELTO") {
+            console.log(`ProductoReporte: producto ${data.productoId} devuelto`);
+        }
+    }
+
     //Listar todos los productos existentes
     listarProductos() {
         const productos = this.productoRepo.mostrarTodo();

@@ -1,30 +1,30 @@
 /**Maneja el repositorio del modelo de los productos */
-const Producto = require('../modelos/Producto');
+const ProductoFabrica = require('../fabricas/ProductoFabrica');
 
 class ProductoRepositorio {
     constructor(productosIniciales = [], estadoRepositorio, rentaProdRepositorio) {
-        this.producto = productosIniciales.map(p => new Producto(
-            p.id,
-            p.nombre,
-            p.categoria,
-            p.precioVenta,
-            p.rentable,
-            p.renta,
-            p.stock,
-            p.estado
-        ));
+        this.producto = productosIniciales.map(p => ProductoFabrica.crearProducto(p.id, p));
         this.estadoRepo = estadoRepositorio;
         this.rentaProdRepo = rentaProdRepositorio;
     }
 
+    //Generar el IDs de producto
+    generarIdProducto() {
+    if (this.producto.length === 0) return "P001";
+        const ultimoId = this.producto[this.producto.length - 1].id;
+        const numero = parseInt(ultimoId.substring(1));
+        const nuevoNumero = numero + 1;
+        return "P" + nuevoNumero.toString().padStart(3, "0");
+    }
+
     //Insertar productos
     insertarProducto(producto) {
-        const existe = this.buscarPorId(producto.id);
+        /*const existe = this.buscarPorId(producto.id);
         if (existe) {
             console.warn("Aviso: ya existe un producto con este id, se actualizará de todas formas");
             existe.actualizarProducto(producto);
             return existe;        
-        }
+        }*/
 
         this.producto.push(producto);        
         return producto;

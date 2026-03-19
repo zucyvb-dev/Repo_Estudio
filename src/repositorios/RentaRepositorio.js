@@ -1,20 +1,18 @@
 /**Maneja el repositorio del modelo de Renta */
-const Renta = require('../modelos/Renta');
+const RentaFabrica = require('../fabricas/RentaFabrica');
 
 class RentaRepositorio {
     constructor(rentaInicial = []) {
-        this.rentas = rentaInicial.map(r =>
-            new Renta(
-                r.id,
-                r.clienteId,
-                r.productoId,
-                r.modelo,
-                r.dias,
-                r.costo,
-                r.fechaISO || new Date().toISOString().split("T")[0],
-                r.devuelta
-            )
-        )
+        this.rentas = rentaInicial.map(r => RentaFabrica.crearRenta(
+            r.id,
+            r.clienteId,
+            r.productoId,
+            r.modelo,
+            r.dias,
+            r.costo,
+            r.fechaISO,
+            r.devuelta
+        ));
     }
 
     //Generar el id autoincremental de la Renta

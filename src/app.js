@@ -4,6 +4,9 @@ const readline = require('readline-sync');
 //Importar datos iniciales
 const datos = require('../src/datos/Datos');
 
+//Importar al Notificador
+const Notificador = require('./utiles/Notificador');
+
 //Exporto los repositorios
 const ClienteRepositorio = require('./repositorios/ClienteRepositorio');
 const ContactoRepositorio = require('./repositorios/ContactoRepositorio');
@@ -30,12 +33,15 @@ const RentaReporte = require('./reportes/RentaReporte');
 const BalanceGeneralReporte = require('./reportes/BalanceGeneral');
 
 //Exporto los modelos
-const Rentas = require('./modelos/Renta');
 const Item = require('./modelos/Item');
 
 class App {
     constructor() {
         //Inyección de dependencias
+        
+        // Crear notificador central
+        const notificador = new Notificador();
+
         // Extraer contactos e historiales de cada cliente
         // Extraer contactos e historiales de cada cliente (defensivo)
         const contactos = datos.clientes.map(c => c.contacto || {});
@@ -61,10 +67,10 @@ class App {
         const rentaRepo = new RentaRepositorio(datos.rentas);
 
         //Inicialización de servicios        
-        this.ventaServ = new VentaServicio(ventaRepo,clienteRepo,productoRepo,configRepo);
-        this.rentaServ = new RentaServicio(rentaRepo);
-        this.productoServ = new ProductoServicio(productoRepo,this.rentaServ);
-        this.clienteServ = new ClienteServicio(clienteRepo,this.productoServ,this.ventaServ);
+        this.ventaServ = new VentaServicio(ventaRepo,clienteRepo,productoRepo,configRepo,notificador);
+        this.rentaServ = new RentaServicio(rentaRepo,notificador);
+        this.productoServ = new ProductoServicio(productoRepo,this.rentaServ,notificador);
+        this.clienteServ = new ClienteServicio(clienteRepo,this.productoServ,this.ventaServ,notificador);
         
         //Inicialización de los Reportes
         this.clienteReport = new ClienteReporte(clienteRepo,ventaRepo,rentaRepo);
@@ -72,6 +78,14 @@ class App {
         this.ventaReport = new VentaReporte(ventaRepo);
         this.rentaReport = new RentaReporte(rentaRepo);
         this.balanceGeneralReport = new BalanceGeneralReporte(clienteRepo,productoRepo,ventaRepo,rentaRepo);
+
+        // Suscribir reportes al notificador
+        notificador.suscribir(this.balanceGeneralReport);
+        notificador.suscribir(this.clienteReport);
+        notificador.suscribir(this.productoReport);
+        notificador.suscribir(this.rentaReport);
+        notificador.suscribir(this.ventaReport);
+
     }
 
     //Armar el menú
@@ -104,22 +118,23 @@ class App {
 
             switch (opcion) {
                 case "1":
-                    const id = readline.question("ID del cliente: ");
                     const nombre = readline.question("Nombre del cliente: ");
-                    const activo = readline.question("Activo (true/false): ") === "true";
                     const email = readline.question("Email: ");
-                    const telefono = readline.question("Telefono: ");
+                    const telefono = readline.question("Telefono: ");                    
+                    const activo = readline.question("Activo (true/false): ") === "true";
 
                     try {
-                        const cliente = this.clienteServ.insertarNuevoCliente({
-                            id,
+                        //Registrar el cliente
+                        const cliente = {
                             nombre,
                             activo,
-                            contacto: {email,telefono},
+                            contacto: { email, telefono },
                             historial: { ventas: [], rentas: [] }
-                        });
+                        };
+
+                        const resultCliente = this.clienteServ.insertarNuevoCliente(cliente);
                         
-                        console.log("Cliente insertado correctamente: ",cliente);                        
+                        console.log("Cliente insertado correctamente: ", resultCliente);                        
                     } catch (error) {
                         console.error(error.message);                        
                     }
@@ -127,24 +142,25 @@ class App {
                     break;
                 
                 case "2":
-                    const idprod = readline.question("Producto ID: ");
                     const nombreProd = readline.question("Nombre del producto: ");
-                    const categoriaProd = parseInt(readline.question("Categoria: "));
+                    const categoriaProd = readline.question("Categoria: ");
                     const precioVenta = parseFloat(readline.question("Precio de venta: "));
                     const rentable = readline.question("¿Es rentable? (true/false): ") === "true";
                     const stock = parseInt(readline.question("Stock inicial: "));
                     
                     try {
-                        //Registrar el servicio
-                        const producto = this.productoServ.insertarProducto({
-                            id: idprod,
+                        //Registrar el producto
+                        const producto = {
                             nombre: nombreProd,
                             categoria: categoriaProd,
                             precioVenta,
                             rentable,
                             stock
-                        });
-                        console.log("Producto insertado correctamente",producto);
+                        };
+
+                        const resultProducto = this.productoServ.insertarProducto(producto);
+
+                        console.log("Producto insertado correctamente",resultProducto);
                     } catch (error) {
                         console.error(error.message);
                     }
@@ -205,7 +221,7 @@ class App {
                         const devuelto = this.clienteServ.devolverProductoPorCliente(idClienteDRenta,idProductoDRenta);
                         console.log("Producto devuelto correctamente",devuelto);
                     } catch (error) {
-                        console.error(error.message);
+                        console.error(error.stack);
                     }
                     
                     break;

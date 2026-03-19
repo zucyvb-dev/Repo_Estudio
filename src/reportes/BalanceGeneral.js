@@ -1,5 +1,4 @@
 /**Balance General de la gestión de clientes, productos ventas y rentas */
-const Validador = require('../utiles/Validador');
 
 class BalanceGeneral {
     constructor(clienteRepositorio,productoRepositorio,ventaRepositorio,rentaRepositorio) {
@@ -7,6 +6,14 @@ class BalanceGeneral {
         this.productoRepo = productoRepositorio;
         this.ventaRepo = ventaRepositorio;
         this.rentaRepo = rentaRepositorio;
+    }
+
+    //Configurar el Balance General como Observador
+    actualizar(evento, data) {
+        if (evento === "VENTA_REGISTRADA" || evento === "RENTA_REGISTRADA") {
+            console.log("BalanceGeneral: recalculando balance...");
+            console.log(this.generarBalanceGeneral());
+        }
     }
 
     //Balance general

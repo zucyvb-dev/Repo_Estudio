@@ -39,16 +39,27 @@ class Validador {
     
     //Verificar si la renta es válida
     static validarRenta(renta) {
-        if (!renta || !renta.id || !renta.productoId || !renta.costo < 0) {
-            throw new Error("La renta no es válida. ");            
+        /*if (!renta || !renta.id || !renta.clienteId || !renta.productoId) {
+            throw new Error("La renta no es válida.");            
+        }*/
+        if (Array.isArray(renta)) {
+            renta = renta[0]; // o recorrer todas
         }
+        if (!renta) throw new Error("La renta no es válida: objeto vacío.");
+        if (!renta.id) throw new Error("La renta no es válida: falta id.");
+        if (!renta.clienteId) throw new Error("La renta no es válida: falta clienteId.");
+        if (!renta.productoId) throw new Error("La renta no es válida: falta productoId.");
+
+        Validador.validarNumeroPositivo(renta.costo, "costo");
+
         return true;
     }
+
 
     /**Validaciones de Producto y de los elementos que componen sus clases hijas estado e rentaProd */
     //Validar los datos básicos un producto
     static validarProducto(datosProducto) {
-        if (!datosProducto.id || !datosProducto.nombre || !this.validarPrecioVentaProducto(datosProducto) || !this.validarStock(datosProducto)) {
+        if (!datosProducto.nombre || !datosProducto.categoria || !this.validarPrecioVentaProducto(datosProducto) || !this.validarStock(datosProducto)) {
             throw new Error("El producto no es válido. ");            
         }
         return true;
@@ -57,15 +68,14 @@ class Validador {
     //Validar si el producto es rentable
     static validarProductoRentable(producto) {
         if (!producto || producto.rentable !== true) {
-            throw new Error("El producto no es rentable. ");
-            
+            throw new Error("El producto no es rentable. ");            
         }
         return true;
     }
 
     //Validar el estado de un producto está disponible (no rentado)
     static validarEstadoProducto(producto) {
-        if (!producto || producto.estado !== "Disponible" || !this.validarProductoRentable(producto)) {
+        if (!producto || producto.estado.rentado !== false || !this.validarProductoRentable(producto)) {
             throw new Error("El producto no está disponible. ");
             
         }
@@ -93,7 +103,8 @@ class Validador {
 
     //Validar que un texto no esté vacío
     static validarTextoNoVacio(valor,campo) {
-        if (!valor || valor.trim() === "") {
+        
+        if (typeof valor !== "string" || valor.trim() === "") {
             throw new Error(`El campo ${campo} no puede estar vacío. `);            
         }
         return true;
@@ -101,17 +112,25 @@ class Validador {
 
     //Validar que se introduzcan números positivo
     static validarNumeroPositivo(valor, campo) {
-        if (typeof valor !== "number" || valor < 0){
-            throw new Error(`El campo ${campo} debe ser un número positivo. `);            
+        if (valor === undefined || valor === null) {
+            throw new Error(`El campo ${campo} no está definido.`);
         }
-        return true;
+        if (typeof valor !== 'number' || isNaN(valor)) {
+            throw new Error(`El campo ${campo} debe ser un número.`);
+        }
+        if (valor < 0) {
+            throw new Error(`El campo ${campo} debe ser un número positivo.`);
+        }
+        return true;        
     }
 
     //Validar los Objetos existentes
-    static validarObjetoExistente(objeto,campo) {
-        if (!objeto) {
-            throw new Error(`El ${campo} no existe. `);            
+    static validarObjetoExistente(objeto,campo) {        
+        if (objeto === undefined || objeto === null) {
+            throw new Error(`El ${campo} no existe.`);
         }
+        
+        return true;
     }
 
     //Validar que los modelos de Renta sean (LINEAL/POR_DIA)
@@ -119,6 +138,14 @@ class Validador {
         const tipos_renta = ["LINEAL","POR_DIA"];
         if (!tipos_renta.includes(modelo)){
             throw new Error(`Modelo de renta inválido. Debe ser LINEAL o POR_DIA. `);            
+        }
+        return true;
+    }
+
+    //Validar los campos booleanos
+    static validarBooleano(valor, campo) {
+        if (typeof valor !== "boolean") {
+            throw new Error(`El ${campo} debe ser un valor booleano (true/false).`);
         }
         return true;
     }

@@ -1,6 +1,5 @@
 /**Maneja el repositorio del modelo de Ventas */
-const Venta = require('../modelos/Venta');
-const Item = require('../modelos/Item');
+const VentaFabrica = require('../fabricas/VentaFabrica');
 
 class VentaRepositorio {
     constructor(ventaIniciales = [], itemRepositorio) {
@@ -8,19 +7,16 @@ class VentaRepositorio {
         if (!Array.isArray(ventaIniciales)) {
             this.ventas = [];
         } else {
-            this.ventas = ventaIniciales.map(v =>
-                new Venta(
-                    v.id,
-                    v.clienteId,
-                    Array.isArray(v.items) 
-                        ? v.items.map(i => new Item(i.productoId, i.cantidad, i.precioUnitario))    //instaciación directa de ítems
-                        : [], // si no hay items, arranca vacío
-                    v.subtotal || 0,
-                    v.tax || 0,
-                    v.total || 0,
-                    v.fechaISO || new Date().toISOString().split("T")[0]
-                )
-            );
+            this.ventas = ventaIniciales.map(v => VentaFabrica.crearVenta(
+                v.id,
+                v.clienteId,
+                v.items,
+                v.subtotal,
+                v.tax,
+                v.total,
+                v.fechaISO
+            ));
+
         }
 
         this.itemRepo = itemRepositorio;
@@ -56,7 +52,7 @@ class VentaRepositorio {
     
     //Buscar por una Venta por Producto
     buscarVentaPorProducto(idProducto) {
-        return this.ventas.filter(v => v.productoId === idProducto);
+        return this.ventas.filter(v => v.items.some(i => i.productoId === idProducto));
     }
 
     //Buscar una venta por fecha

@@ -5,6 +5,13 @@ class VentaReportes {
         this.ventaRepo = ventaRepositorio;
     }
 
+    //Configurar el reporte de Venta como Observador
+    actualizar(evento, data) {
+        if (evento === "VENTA_REGISTRADA") {
+            console.log(`VentaReportes: nueva venta registrada ${data.id}`);
+        }
+    }
+
     //Mostrar todas las ventas por cliente
     ventasPorCliente(clienteId) {
         return this.ventaRepo.buscarVentaPorCliente(clienteId);

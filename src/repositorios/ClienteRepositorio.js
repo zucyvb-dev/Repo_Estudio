@@ -1,16 +1,10 @@
 /**Maneja el repositorio del modelo de Cliente */
 //Exportamos los modelos propio y de sus clases repositorio hijas
-const Cliente = require('../modelos/Cliente');
+const ClienteFabrica = require('../fabricas/ClienteFabrica');
 
 class ClienteRepositorio {
     constructor(clienteInicial =  [], contactoRepo, historialRepo) {
-        this.cliente = clienteInicial.map(c => new Cliente(
-            c.id,
-            c.nombre,
-            c.activo,
-            c.contacto,
-            c.historial
-        ));
+        this.cliente = clienteInicial.map(c => ClienteFabrica.crearCliente(c.id, c));
         this.contactoRepo = contactoRepo;
         this.historialRepo = historialRepo;        
     }
@@ -25,13 +19,18 @@ class ClienteRepositorio {
         return this.cliente.find(c => c.id === clienteId);
     }
 
-    //Agregar un nuevo cliente
-    insertarCliente(clienteNuevo) {
-        const existe = this.buscarClientePorId(clienteNuevo.id);
-        if (existe) {
-            throw new Error("Ya existe ya existe ese cliente");            
-        }
+    //Generar el ID
+    generarIdCliente() {
+    if (this.cliente.length === 0) return "C001";
+        const ultimoId = this.cliente[this.cliente.length - 1].id;
+        const numero = parseInt(ultimoId.substring(1));
+        const nuevoNumero = numero + 1;
+        return "C" + nuevoNumero.toString().padStart(3, "0");
+    }
 
+    //Agregar un nuevo cliente
+    insertarCliente(clienteNuevo) {        
+       
         // Asegurar estructura de historial en el cliente nuevo
         clienteNuevo.historial = clienteNuevo.historial && typeof clienteNuevo.historial === 'object'
             ? {

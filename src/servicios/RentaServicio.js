@@ -1,10 +1,11 @@
 /**Maneja toda la lógica de negocio de las Rentas */
-const Renta = require('../modelos/Renta');
+const RentaFabrica = require('../fabricas/RentaFabrica');
 const Validador = require('../utiles/Validador');
 
 class RentaServicio {
-    constructor(rentaRepositorio) {
+    constructor(rentaRepositorio, notificador) {
         this.rentaRepo = rentaRepositorio;
+        this.notificador = notificador;
     }
 
     
@@ -21,15 +22,26 @@ class RentaServicio {
         let costo = 0;
 
         if (modelo === "POR_DIA") {
+            if (typeof producto.rentaProd.precioDia !== "number") {
+                throw new Error("El precio por día no está definido o no es numérico");
+            }
             //Calculo el costo teniendo en cuenta los días
-            costo = dias * producto.rentaProd.precioDia;
+            costo = dias * Number(producto.rentaProd.precioDia);
         } else if (modelo === "LINEAL") {
+            if (typeof producto.rentaProd.precioLineal !== "number") {
+                throw new Error("El precio lineal no está definido o no es numérico");
+            }
             //Calculo el costo teniendo en cuenta los días
-            costo = producto.rentaProd.precioLineal;
+            costo = Number(producto.rentaProd.precioLineal);
         } else {
             throw new Error ('Modelo de renta inválido');
         }
-        
+
+        //Validar el costo antes de devolverlo
+        if (typeof costo !== "number" || isNaN(costo)) {
+            throw new Error("El costo calculado no es válido");
+        }
+
         return costo;
     }
     
@@ -37,7 +49,7 @@ class RentaServicio {
     registrarRenta(renta,producto) {
         //Validar el Objeto
         Validador.validarObjetoExistente(renta,"renta");
-
+        
         //Validar sus atributos
         Validador.validarObjetoExistente(renta.clienteId,"clienteId");
         Validador.validarObjetoExistente(renta.productoId,"productoId");
@@ -53,8 +65,14 @@ class RentaServicio {
         const costo = this.calcularCostoRenta(producto,renta.dias,renta.modelo);
         
         //Crear el objeto renta
-        const nuevaRenta = new Renta(idRenta,renta.clienteId,renta.productoId,renta.modelo,renta.dias,costo,fechaISO,renta.devuelta);
-        
+        const nuevaRenta = RentaFabrica.crearRenta(idRenta,renta.clienteId,renta.productoId,renta.modelo,renta.dias,costo,fechaISO,renta.devuelta);
+       
+        //Validar nueva renta
+        if (!Validador.validarRenta(nuevaRenta)) throw new Error ('Renta inválida');
+    
+        // Notificar a los observadores
+        this.notificador.notificar("RENTA_REGISTRADA", nuevaRenta);
+
         return this.rentaRepo.insertarRenta(nuevaRenta);
     }
 
@@ -65,6 +83,10 @@ class RentaServicio {
 
         //Marcar la renta devuelta
         renta.devuelta = true;
+
+        // Notificar devolución
+        this.notificador.notificar("RENTA_DEVUELTA", renta);
+
 
         return renta;
     }        

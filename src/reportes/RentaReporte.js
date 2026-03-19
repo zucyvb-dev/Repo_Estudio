@@ -5,6 +5,16 @@ class RentaReporte {
         this.rentaRepo = rentaRepositorio;
     }
 
+    //Configurar el reporte de Renta como Observador
+    actualizar(evento, data) {
+        if (evento === "RENTA_REGISTRADA") {
+            console.log(`RentaReporte: nueva renta registrada ${data.id}`);
+        }
+        if (evento === "RENTA_DEVUELTA") {
+            console.log(`RentaReporte: renta devuelta ${data.id}`);
+        }
+    }
+
     //Listar todas las Rentas
     listarRentas() {
         return this.rentaRepo.mostrarTodo()
