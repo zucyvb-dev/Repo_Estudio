@@ -7,10 +7,9 @@ class RentaServicio {
         this.rentaRepo = rentaRepositorio;
         this.notificador = notificador;
     }
-
     
     //Realizar el cálculo del costo de la renta según su modelo
-    calcularCostoRenta(producto,dias,modelo) {
+    async calcularCostoRenta(producto,dias,modelo) {
         Validador.validarObjetoExistente(producto,"producto");
         Validador.validarNumeroPositivo(dias,"dias")
         Validador.validarModeloRenta(modelo);
@@ -46,7 +45,7 @@ class RentaServicio {
     }
     
     //Insertar una Venta
-    registrarRenta(renta,producto) {
+    async registrarRenta(renta,producto) {
         //Validar el Objeto
         Validador.validarObjetoExistente(renta,"renta");
         
@@ -58,11 +57,11 @@ class RentaServicio {
         //Validador.validarObjetoExistente(renta.devuelta, "devuelta")
 
         //Generar el ID y la fecha
-        const idRenta = this.rentaRepo.generarIdRenta();
+        const idRenta = await this.rentaRepo.generarIdRenta();
         const fechaISO = new Date().toISOString().split("T")[0];
 
         //Calcular el costo y asignarlo al objeto
-        const costo = this.calcularCostoRenta(producto,renta.dias,renta.modelo);
+        const costo = await this.calcularCostoRenta(producto,renta.dias,renta.modelo);
         
         //Crear el objeto renta
         const nuevaRenta = RentaFabrica.crearRenta(idRenta,renta.clienteId,renta.productoId,renta.modelo,renta.dias,costo,fechaISO,renta.devuelta);
@@ -71,13 +70,13 @@ class RentaServicio {
         if (!Validador.validarRenta(nuevaRenta)) throw new Error ('Renta inválida');
     
         // Notificar a los observadores
-        this.notificador.notificar("RENTA_REGISTRADA", nuevaRenta);
+        await this.notificador.notificar("RENTA_REGISTRADA", nuevaRenta);
 
-        return this.rentaRepo.insertarRenta(nuevaRenta);
+        return await this.rentaRepo.insertarRenta(nuevaRenta);
     }
 
     //Devolver una renta realizada de un producto
-    devolverRenta(renta) {
+    async devolverRenta(renta) {
         //Validar el Objeto
         Validador.validarObjetoExistente(renta,"renta");
 
@@ -85,7 +84,7 @@ class RentaServicio {
         renta.devuelta = true;
 
         // Notificar devolución
-        this.notificador.notificar("RENTA_DEVUELTA", renta);
+        await this.notificador.notificar("RENTA_DEVUELTA", renta);
 
 
         return renta;

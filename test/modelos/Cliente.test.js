@@ -2,6 +2,7 @@
 const Cliente = require('../../src/modelos/Cliente');
 const Contacto = require('../../src/modelos/Contacto');
 const Historial = require('../../src/modelos/Historial');
+const ClienteFabrica = require('../../src/fabricas/ClienteFabrica');
 
 describe('Cliente', () => {
   
@@ -9,7 +10,19 @@ describe('Cliente', () => {
     test('inicializa correctamente con Contacto y Historial válidos', () => {
         const contacto = new Contacto('rosy@example.com', '555-1234');
         const historial = new Historial([], []);
-        const c = new Cliente('C001', 'Rosy', true, contacto, historial);
+        const datos = {
+            id: 'C001',
+            nombre: 'Rosy',
+            activo: true,
+            contacto: contacto,
+            historial: historial
+        };
+
+        const c = ClienteFabrica.crearCliente(datos);
+
+        expect(c).toBeInstanceOf(Cliente);
+        expect(c.contacto).toBeInstanceOf(Contacto);
+        expect(c.historial).toBeInstanceOf(Historial);
 
         expect(c.id).toBe('C001');
         expect(c.nombre).toBe('Rosy');
@@ -20,8 +33,8 @@ describe('Cliente', () => {
 
     // Caso: activo coercionado a booleano
     test('convierte activo a booleano', () => {
-        const cTruthy = new Cliente('C002', 'Ana', 'yes', {}, {});
-        const cFalsy = new Cliente('C003', 'Luis', 0, {}, {});
+        const cTruthy = ClienteFabrica.crearCliente('C002', 'Ana', 'yes', {}, {});
+        const cFalsy = ClienteFabrica.crearCliente('C003', 'Luis', 0, {}, {});
         expect(cTruthy.activo).toBe(true);
         expect(cFalsy.activo).toBe(false);
     });
@@ -29,7 +42,7 @@ describe('Cliente', () => {
     // Caso: contacto como objeto literal
     test('inicializa contacto desde literal', () => {
         const contactoLiteral = { email: 'ana@example.com', telefono: '555-5678' };
-        const c = new Cliente('C004', 'Ana', true, contactoLiteral, {});
+        const c = ClienteFabrica.crearCliente('C004', 'Ana', true, contactoLiteral, {});
         expect(c.contacto).toBeInstanceOf(Contacto);
         expect(c.contacto.email).toBe('ana@example.com');
         expect(c.contacto.telefono).toBe('555-5678');
@@ -37,14 +50,14 @@ describe('Cliente', () => {
 
     // Caso: contacto como null
     test('inicializa contacto queda null si se pasa null', () => {
-        const c = new Cliente('C005', 'Ana', true, {}, {});
+        const c = ClienteFabrica.crearCliente('C005', 'Ana', true, {}, {});
         expect(c.contacto).toBeNull();
     });
 
     // Caso: historial como objeto literal
     test('inicializa historial desde literal', () => {
         const historialLiteral = { ventas: ['V001'], rentas: ['R001'] };
-        const c = new Cliente('C006', 'Pedro', true, {}, historialLiteral);
+        const c = ClienteFabrica.crearCliente('C006', 'Pedro', true, {}, historialLiteral);
         expect(c.historial).toBeInstanceOf(Historial);
         expect(c.historial.ventas).toContain('V001');
         expect(c.historial.rentas).toContain('R001');
@@ -52,20 +65,20 @@ describe('Cliente', () => {
 
     // Caso: historial como null
     test('inicializa historial queda null si se pasa null', () => {
-        const c = new Cliente('C006', 'Pedro', true, {}, {});
+        const c = ClienteFabrica.crearCliente('C006', 'Pedro', true, {}, {});
         expect(c.historial).toBeNull();
     });
 
     // Caso: historial de Ventas como objeto literal
     test('registrarVenta inserta en historial', () => {
-        const c = new Cliente('C007', 'Maria', true, {}, {});
+        const c = ClienteFabrica.crearCliente('C007', 'Maria', true, {}, {});
         c.registrarVenta('V002');
         expect(c.historial.ventas).toContain('V002');
     });
 
     // Caso: historial de Renta como objeto literal
     test('registrarRenta inserta en historial', () => {
-        const c = new Cliente('C008', 'Jose', true, {}, {});
+        const c = ClienteFabrica.crearCliente('C008', 'Jose', true, {}, {});
         c.registrarRenta('R002');
         expect(c.historial.rentas).toContain('R002');
     });

@@ -10,7 +10,7 @@ class ProductoServicio {
     }
 
     //Insertar un Producto
-    insertarProducto(datosProducto) {
+    async insertarProducto(datosProducto) {
         //Validaciones de los datos del Producto
         if (!Validador.validarProducto(datosProducto)) throw new Error("Producto inválido");
         
@@ -25,7 +25,7 @@ class ProductoServicio {
         const stock = Number.isFinite(Number(datosProducto.stock)) ? Number(datosProducto.stock) : 0;
 
         //Genero el IDs
-        const nuevoId = this.productoRepo.generarIdProducto();
+        const nuevoId = await this.productoRepo.generarIdProducto();
         
         const producto = ProductoFabrica.crearProducto(
             nuevoId,                                               //Autoincremental
@@ -41,17 +41,17 @@ class ProductoServicio {
         );
         
         // Notificar inserción a los observadores
-        this.notificador.notificar("PRODUCTO_INSERTADO", producto);
+        await this.notificador.notificar("PRODUCTO_INSERTADO", producto);
 
         //Insertar el producto y devolverlo
-        return this.productoRepo.insertarProducto(producto);        
+        return await this.productoRepo.insertarProducto(producto);        
 
     }
 
     //Realizar el registro de una renta de un Producto
-    registrarRentaProducto(renta) {
+    async registrarRentaProducto(renta) {
         
-        const producto = this.productoRepo.buscarPorId(renta.productoId);
+        const producto = await this.productoRepo.buscarPorId(renta.productoId);
         
         if (!producto) throw new Error ('Producto no encontrado');
 
@@ -76,16 +76,16 @@ class ProductoServicio {
         };
 
         //Insertar la renta
-        this.rentaServ.registrarRenta(renta,producto);
+        await this.rentaServ.registrarRenta(renta,producto);
 
         //Reducir el stock
         producto.stock -= 1;
     
         //Actualizo el producto
-        this.productoRepo.actualizarProducto(renta.productoId,producto);
+        await this.productoRepo.actualizarProducto(renta.productoId,producto);
 
         // Notificar renta a los observadores
-        this.notificador.notificar("PRODUCTO_RENTADO", renta);
+        await this.notificador.notificar("PRODUCTO_RENTADO", renta);
 
         return { 
             renta,
@@ -93,8 +93,8 @@ class ProductoServicio {
     }
 
     //Realizar la devolución del Producto
-    devolverProducto(clienteId,idProducto) {
-        const producto = this.productoRepo.buscarPorId(idProducto);
+    async devolverProducto(clienteId,idProducto) {
+        const producto = await this.productoRepo.buscarPorId(idProducto);
         if (!producto) throw new Error ('Producto no encontrado');
         if (!producto.estado || !producto.estado.rentado) throw new Error ('El producto no estaba rentado');
 
@@ -107,7 +107,7 @@ class ProductoServicio {
         if (!Validador.validarRenta(renta)) throw new Error ('Renta inválida');
         
         //Marcar la renta como devuelta
-        this.rentaServ.devolverRenta(renta);
+        await this.rentaServ.devolverRenta(renta);
 
         //Formatear a los valores iniciales el producto
         producto.rentable = true;
@@ -118,10 +118,10 @@ class ProductoServicio {
         producto.stock += 1;
 
         //Actualizar el producto y devolverlo
-        this.productoRepo.actualizarProducto(renta.productoId,producto);
+        await this.productoRepo.actualizarProducto(renta.productoId,producto);
 
         // Notificar devolución a los observadores
-        this.notificador.notificar("PRODUCTO_DEVUELTO", renta);
+        await this.notificador.notificar("PRODUCTO_DEVUELTO", renta);
 
         return { 
             renta,
@@ -129,17 +129,18 @@ class ProductoServicio {
     }
 
     //Actualizar el stock del producto
-    actualizarStockProducto(idProducto,cantidad) {
-        const producto = this.productoRepo.buscarPorId(idProducto);
+    async actualizarStockProducto(idProducto,cantidad) {
+        const producto = await this.productoRepo.buscarPorId(idProducto);
         if (!producto) throw new Error ('Producto no encontrado');
         if (!Validador.validarStock(producto,cantidad)) throw new Error ('Stock insuficiente de ese producto');
+        
         producto.stock -= cantidad;
 
         // Notificar devolución a los observadores
-        this.notificador.notificar("STOCK_ACTUALIZADO", { idProducto, producto});
+        await this.notificador.notificar("STOCK_ACTUALIZADO", { idProducto, producto});
 
         //Devuelvo el producto actualizado con el stock actual
-        return this.productoRepo.actualizarProducto(idProducto,producto);
+        return await this.productoRepo.actualizarProducto(idProducto,producto);
     }
 }
 

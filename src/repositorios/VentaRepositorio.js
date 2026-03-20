@@ -32,9 +32,9 @@ class VentaRepositorio {
     }
 
     //Insertar una Venta
-    insertarVenta(venta) {
+    async insertarVenta(venta) {
         //Validar el item con el repositorio hijo
-        venta.items = venta.items.map(i => this.itemRepo.insertarItem(i));
+        venta.items = await Promise.all(venta.items.map(i => this.itemRepo.insertarItem(i)));
         
         this.ventas.push(venta);
         return venta;
@@ -46,22 +46,22 @@ class VentaRepositorio {
     }
 
     //Buscar por una Venta por Cliente
-    buscarVentaPorCliente(clienteId) {
+    async buscarVentaPorCliente(clienteId) {
         return this.ventas.filter(v => v.clienteId === clienteId);
     }
     
     //Buscar por una Venta por Producto
-    buscarVentaPorProducto(idProducto) {
+    async buscarVentaPorProducto(idProducto) {
         return this.ventas.filter(v => v.items.some(i => i.productoId === idProducto));
     }
 
     //Buscar una venta por fecha
-    buscarVentaPorFecha(fecha) {
+    async buscarVentaPorFecha(fecha) {
         return this.ventas.filter(v => v.fechaISO === fecha);
     }
 
     //Buscar por id de Venta
-    buscarPorIdVenta(idVenta) {
+    async buscarPorIdVenta(idVenta) {
         return this.ventas.find(v => v.id === idVenta);
     }
 }

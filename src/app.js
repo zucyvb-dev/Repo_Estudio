@@ -110,7 +110,7 @@ class App {
     }
 
     //Escoger los métodos de cada opción
-    run() {
+    async run() {
         let opcion;
         do {
             this.mostrarMenu();
@@ -132,7 +132,7 @@ class App {
                             historial: { ventas: [], rentas: [] }
                         };
 
-                        const resultCliente = this.clienteServ.insertarNuevoCliente(cliente);
+                        const resultCliente = await this.clienteServ.insertarNuevoCliente(cliente);
                         
                         console.log("Cliente insertado correctamente: ", resultCliente);                        
                     } catch (error) {
@@ -158,7 +158,7 @@ class App {
                             stock
                         };
 
-                        const resultProducto = this.productoServ.insertarProducto(producto);
+                        const resultProducto = await this.productoServ.insertarProducto(producto);
 
                         console.log("Producto insertado correctamente",resultProducto);
                     } catch (error) {
@@ -179,7 +179,7 @@ class App {
                             cantidadVenta, 
                             precioUnitarioVenta 
                         )
-                        const ventas = this.clienteServ.insertarVentaPorCliente(idClienteVenta,items);
+                        const ventas = await this.clienteServ.insertarVentaPorCliente(idClienteVenta,items);
                         console.log("Venta registrada correctamente",ventas);
                     } catch (error) {
                         console.error(error.message);
@@ -205,7 +205,7 @@ class App {
                         }
                         
                         //Registrar el servicio
-                        const renta = this.clienteServ.insertarRentaPorCliente(idClienteRenta,rentaI);
+                        const renta = await this.clienteServ.insertarRentaPorCliente(idClienteRenta,rentaI);
                         console.log("Renta registrada correctamente",renta);
                     } catch (error) {
                         console.error(error.message);
@@ -218,7 +218,7 @@ class App {
                     const idProductoDRenta = readline.question("Producto ID: ");
                     
                     try {
-                        const devuelto = this.clienteServ.devolverProductoPorCliente(idClienteDRenta,idProductoDRenta);
+                        const devuelto = await this.clienteServ.devolverProductoPorCliente(idClienteDRenta,idProductoDRenta);
                         console.log("Producto devuelto correctamente",devuelto);
                     } catch (error) {
                         console.error(error.stack);
@@ -304,7 +304,6 @@ class App {
 
         } while (opcion !== "0");
     }
-
 }
 
 //Llamada final para ejecutar la aplicación

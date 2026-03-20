@@ -18,7 +18,7 @@ class ProductoRepositorio {
     }
 
     //Insertar productos
-    insertarProducto(producto) {
+    async insertarProducto(producto) {
         /*const existe = this.buscarPorId(producto.id);
         if (existe) {
             console.warn("Aviso: ya existe un producto con este id, se actualizará de todas formas");
@@ -31,7 +31,7 @@ class ProductoRepositorio {
     }
 
     //Actualizar productos
-    actualizarProducto(idProducto,datosProducto) {
+    async actualizarProducto(idProducto,datosProducto) {
         const index = this.producto.findIndex(p => p.id === idProducto);
         if (index === -1) throw new Error ('Producto no encontrado');
         Object.assign(this.producto[index],datosProducto);
@@ -45,8 +45,7 @@ class ProductoRepositorio {
     }
 
     //Buscar un producto por Id
-    buscarPorId(idProducto) {
-        
+    async buscarPorId(idProducto) {        
         return this.producto.find(p => p.id === idProducto);
     }
 }

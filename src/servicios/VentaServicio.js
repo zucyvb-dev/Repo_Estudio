@@ -12,17 +12,17 @@ class VentaServicio {
     }
 
     //Registrar un venta
-    registrarVenta(clienteId,items) {
+    async registrarVenta(clienteId,items) {
         //Validar el cliente
-        const cliente = this.clienteRepo.buscarClientePorId(clienteId);
+        const cliente = await this.clienteRepo.buscarClientePorId(clienteId);
         Validador.validarClienteActivo(cliente);
 
         //Validar Items
-        items.forEach(item => {
+        for (const item of items) {
             Validador.validarPrecioVentaProducto(item.precioUnitario);
-            const producto = this.productoRepo.buscarPorId(item.productoId);
-            Validador.validarStock(producto,item.cantidad);
-        });
+            const producto = await this.productoRepo.buscarPorId(item.productoId);
+            Validador.validarStock(producto, item.cantidad);
+        };
 
         //Calcular subtotal
         const subtotal = items.reduce(
@@ -41,17 +41,17 @@ class VentaServicio {
         const total = subtotal + tax;
 
         //Generar el ID y la fecha
-        const idVenta = this.ventaRepo.generarIdVenta();
+        const idVenta = await this.ventaRepo.generarIdVenta();
         const fechaISO = new Date().toISOString().split("T")[0];
 
         //Crear el objeto venta
         const nuevaVenta = VentaFabrica.crearVenta(idVenta,clienteId,items,subtotal,tax,total,fechaISO);
 
         //Insertar el repositorio   
-        this.ventaRepo.insertarVenta(nuevaVenta);
+        await this.ventaRepo.insertarVenta(nuevaVenta);
 
         // Notificar a los observadores
-        this.notificador.notificar("VENTA_REGISTRADA", nuevaVenta);
+        await this.notificador.notificar("VENTA_REGISTRADA", nuevaVenta);
         
         //Devolver el objeto venta
         return nuevaVenta;

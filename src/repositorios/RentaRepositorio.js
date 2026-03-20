@@ -25,7 +25,7 @@ class RentaRepositorio {
     }
 
     //Insertar una renta
-    insertarRenta(renta) {
+    async insertarRenta(renta) {
         this.rentas.push(renta)
         return renta;
     }
@@ -36,22 +36,22 @@ class RentaRepositorio {
     }
     
     //Buscar por una renta por Cliente
-    buscarRentaPorCliente(clienteId) {
+    async buscarRentaPorCliente(clienteId) {
         return this.rentas.filter(r => r.clienteId === clienteId);
     }
 
     //Buscar por una renta por Producto
-    buscarRentaPorProducto(idProducto) {
+    async buscarRentaPorProducto(idProducto) {
         return this.rentas.filter(r => r.productoId === idProducto);
     }
 
     //Buscar una renta por fecha
-    buscarRentaPorFecha(fecha) {
+    async buscarRentaPorFecha(fecha) {
         return this.rentas.filter(r => r.fechaISO === fecha);
     }
 
     //Buscar por id de Renta
-    buscarPorIdRenta(idRenta) {
+    async buscarPorIdRenta(idRenta) {
         return this.rentas.find(r => r.id === idRenta);
     }
 }

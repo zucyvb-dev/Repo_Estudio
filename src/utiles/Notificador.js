@@ -16,12 +16,13 @@ class Notificador {
     }
 
     // Notificar a todos los observadores
-    notificar(evento, data) {
-        this.observadores.forEach(obs => {
-            if (typeof obs.actualizar === "function") {
-                obs.actualizar(evento, data);
-            }
-        });
+    async notificar(evento, data) {
+        const tareas = this.observadores
+            .filter(obs => typeof obs.actualizar === "function")
+            .map(obs => obs.actualizar(evento, data));
+
+        //Todos los observadores se ejecutan en paralelo y notificar espera a que todos terminen
+        await Promise.all(tareas);
     }
 }
 
